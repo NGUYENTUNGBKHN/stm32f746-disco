@@ -1,0 +1,45 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug STM32F746 (OpenOCD/ST-Link)",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/normal/make_dev/wp1/00-helloWorld/_build/helloworld.out", // <--- IMPORTANT: Update this path to your compiled .elf file
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "device": "STM32F746NG", // <--- IMPORTANT: Adjust for your specific F746 part (e.g., STM32F746VG, STM32F746NG, etc.)
+            "svdFile": "${workspaceFolder}/svd/STM32F746x.svd", // <--- IMPORTANT: Path to your SVD file
+            "interface": "swd",
+            "runToEntryPoint": "main", // Start debugging at the 'main' function
+            // "preLaunchTask": "build", // Optional: Task to build your project before launching debugger (requires tasks.json)
+            // "openOCDPath": "D:/xpack-openocd-0.12.0-6-win32-x64/xpack-openocd-0.12.0-6/bin/openocd.exe", // <--- IMPORTANT: Path to your OpenOCD executable (adjust for Windows/macOS)
+            "configFiles": [
+                "interface/stlink.cfg", // Or stlink-v2.cfg, stlink-v2-1.cfg depending on your ST-Link version
+                "target/stm32f7x.cfg" // Or stm32f7xx.cfg, etc., for your F7 series
+            ],
+            // "searchDir": [
+            //     "/usr/share/openocd/scripts", // <--- IMPORTANT: Path to OpenOCD scripts (adjust for Windows/macOS)
+            //     "${workspaceFolder}/openocd_scripts" // Optional: If you have custom OpenOCD config files
+            // ],
+            "searchDir": [
+                "D:/xpack-openocd-0.12.0-6-win32-x64/xpack-openocd-0.12.0-6/scripts", // IMPORTANT: Point to OpenOCD's 'scripts' directory
+                // "${workspaceFolder}/openocd_scripts" // Optional: If you have custom scripts
+            ],
+            "swoConfig": {
+                "enabled": true,
+                // "cpuFrequency": 216000000, // <--- IMPORTANT: Set to your actual CPU frequency in Hz (e.g., 216MHz for F7)
+                "cpuFrequency": 16000000, 
+                "swoFrequency": 2000000, // SWO trace frequency (adjust if needed)
+                "source": "probe",
+                "decoders": [
+                    {
+                        "type": "console",
+                        "label": "ITM",
+                        "port": 0
+                    }
+                ]
+            }
+        }
+    ]
+}
