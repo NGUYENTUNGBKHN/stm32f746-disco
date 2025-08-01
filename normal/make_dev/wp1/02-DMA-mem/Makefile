@@ -41,7 +41,9 @@ LDFLAGS+=-T$(LINKER_SCRIPT) -mthumb -mabi=aapcs
 # 	$(ROOT_PROJ)/boot_startup.c\
 
 SRC_EXCLUDE=\
-	template_startup.s\
+	startup_stm32f746nghx.s\
+# 	startup_stm32f746nghx.s\
+	startup.c\
 
 SRC_INCLUDE+=$(wildcard *.c)
 SRC_INCLUDE+=$(wildcard *.s)
