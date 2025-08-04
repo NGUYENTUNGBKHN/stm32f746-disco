@@ -1,20 +1,17 @@
-/******************************************************************************/
-/*! @addtogroup Group2
-    @file       startup.c
-    @brief      
-    @date       2025/07/30
-    @author     Development Dept at Tokyo (nguyen-thanh-tung@jcm-hq.co.jp)
-    @par        Revision
-    $Id$
-    @par        Copyright (C)
-    Japan CashMachine Co, Limited. All rights reserved.
-******************************************************************************/
+/**
+ * @file       startup.c
+ * @brief      
+ * @date       2025/08/01
+ * @author     [Gentantun] (nguyenthanhtung8196@gmail.com)
+ * @details    
+ * @ref        
+ * @copyright  Copyright (c) 2025 RoboTun
+*/
 #include <stdint.h>
-
 
 extern uint32_t _estack;
 extern int main();
-extern void __libc_init_array();
+// extern void __libc_init_array();
 
 extern uint32_t _sidata;
 
@@ -48,7 +45,7 @@ void Reset_Handler()
 
 
     /* Jump to __libc_init_array */
-    __libc_init_array();
+    // __libc_init_array();
     
     main();
 }
@@ -95,6 +92,7 @@ void CAN1_TX_IRQHandler(void) __attribute((weak, alias("default_handler")));
 void CAN1_RX0_IRQHandler(void) __attribute((weak, alias("default_handler")));
 void CAN1_RX1_IRQHandler(void) __attribute((weak, alias("default_handler")));
 void CAN1_SCE_IRQHandler(void) __attribute((weak, alias("default_handler")));
+void EXTI9_5_IRQHandler(void) __attribute((weak, alias("default_handler")));
 void TIM1_BRK_TIM9_IRQHandler(void) __attribute((weak, alias("default_handler")));
 void TIM1_UP_TIM10_IRQHandler(void) __attribute((weak, alias("default_handler")));
 void TIM1_TRG_COM_TIM11_IRQHandler(void) __attribute((weak, alias("default_handler")));
@@ -212,6 +210,7 @@ uint32_t *_isr_vector[] = {
     (uint32_t*) CAN1_RX0_IRQHandler,
     (uint32_t*) CAN1_RX1_IRQHandler,
     (uint32_t*) CAN1_SCE_IRQHandler,
+    (uint32_t*) EXTI9_5_IRQHandler,
     (uint32_t*) TIM1_BRK_TIM9_IRQHandler,
     (uint32_t*) TIM1_UP_TIM10_IRQHandler,
     (uint32_t*) TIM1_TRG_COM_TIM11_IRQHandler,
@@ -287,5 +286,3 @@ uint32_t *_isr_vector[] = {
     (uint32_t*) I2C4_ER_IRQHandler,
     (uint32_t*) SPDIFRX_IRQHandler,
 };
-
-
