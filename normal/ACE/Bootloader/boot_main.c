@@ -23,14 +23,14 @@ static void jump_to_bootloader();
 int boot_main()
 {
     TRACE_INFO("Bootloader \n");
-    if (1)
+    if (0)
     {
         TRACE_INFO("jumping to application \n");
         jump_to_application();
     }
     else
     {
-        TRACE_INFO("jumping to bootload \n");
+        TRACE_INFO("jumping to bootloader \n");
         jump_to_bootloader();
     }
     while (1)
