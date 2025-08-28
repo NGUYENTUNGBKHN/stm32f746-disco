@@ -13,6 +13,8 @@ ROOT_PROJ:=./
 # CORE_DIR:=$(ROOT_PROJ)/../Core/board
 # CMSIS_DIR:=$(ROOT_PROJ)/../Core/cmsis/inc
 # EXTERNAL_DIR:=$(ROOT_PROJ)/../external
+
+BOOT_DIR:=$(ROOT_PROJ)/boot_process
 COMMON_DIR:=$(ROOT_PROJ)/../Common
 SDK_DIR:=$(ROOT_PROJ)/../SDK/
 
@@ -45,6 +47,8 @@ SRC_EXCLUDE=\
 	template_startup.s\
 
 SRC_INCLUDE+=$(wildcard *.c)
+SRC_INCLUDE+=$(wildcard $(BOOT_DIR)/*.c)
+SRC_INCLUDE+=$(wildcard $(BOOT_DIR)/operation/*.c)
 SRC_INCLUDE+=$(wildcard *.s)
 # SRC_INCLUDE+=$(wildcard $(EXTERNAL_DIR)/segger_rtt/*.c)
 # SRC_FILES+=$(wildcard $(OSKERNEL_DIR)/*.s)
@@ -54,6 +58,8 @@ INC_FOLDERS=\
 	$(COMMON_DIR)\
 	$(SDK_DIR)/Core/Include\
 	$(SDK_DIR)/Device/Include\
+	$(BOOT_DIR)\
+	$(BOOT_DIR)/operation\
 
 LIBS+=
 # LIBS+=-lc -lm

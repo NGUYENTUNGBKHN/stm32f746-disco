@@ -18,6 +18,7 @@ extern "C"
 #endif
 
 /* CODE */
+#include <stdio.h>
 #include "stm32f746xx.h"
 
 #define DEBUG

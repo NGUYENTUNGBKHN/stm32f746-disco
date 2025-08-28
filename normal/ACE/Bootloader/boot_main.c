@@ -9,11 +9,7 @@
     @par        Copyright (C)
     Japan CashMachine Co, Limited. All rights reserved.
 ******************************************************************************/
-
-#include <stdint.h>
-#include <stdio.h>
-#include "common.h"
-#include "memory_map.h"
+#include "boot_main.h"
 
 uint16_t test[30];
 
@@ -67,6 +63,6 @@ static void jump_to_application()
 
 static void jump_to_bootloader()
 {
-    
+    bootloader();
 }
 
