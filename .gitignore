@@ -1,3 +1,6 @@
 **/doc
-
+**/.metadata
+**/.settings
+**/Debug
+**/*.launch
 
