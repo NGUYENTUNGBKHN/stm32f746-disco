@@ -24,6 +24,7 @@ extern "C"
 #include "memory_map.h"
 #include "bootloader.h"
 #include "stm32f7xx_hal_conf.h"
+#include "stm32f7xx_hal.h"
 
 #ifdef __cplusplus
 }

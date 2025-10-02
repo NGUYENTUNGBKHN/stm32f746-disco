@@ -138,7 +138,7 @@
             "swoConfig": {
                 "enabled": true,
                 // "cpuFrequency": 216000000, // <--- IMPORTANT: Set to your actual CPU frequency in Hz (e.g., 216MHz for F7)
-                "cpuFrequency": 16000000, 
+                "cpuFrequency": 216000000, 
                 "swoFrequency": 2000000, // SWO trace frequency (adjust if needed)
                 "source": "probe",
                 "decoders": [
@@ -185,7 +185,7 @@
             "swoConfig": {
                 "enabled": true,
                 // "cpuFrequency": 216000000, // <--- IMPORTANT: Set to your actual CPU frequency in Hz (e.g., 216MHz for F7)
-                "cpuFrequency": 16000000, 
+                "cpuFrequency": 216000000, 
                 "swoFrequency": 2000000, // SWO trace frequency (adjust if needed)
                 "source": "probe",
                 "decoders": [
