@@ -132,7 +132,7 @@
                 "target/stm32f7x.cfg" // Or stm32f7xx.cfg, etc., for your F7 series
             ],
             "searchDir": [
-                "D:/xpack-openocd-0.12.0-6-win32-x64/xpack-openocd-0.12.0-6/scripts", // IMPORTANT: Point to OpenOCD's 'scripts' directory
+                "D:/xpack-openocd-0.12.0-6-win32-x64/xpack-openocd-0.12.0-6/openocd/scripts", // IMPORTANT: Point to OpenOCD's 'scripts' directory
                 // "${workspaceFolder}/openocd_scripts" // Optional: If you have custom scripts
             ],
             "swoConfig": {
@@ -179,7 +179,7 @@
                 "target/stm32f7x.cfg" // Or stm32f7xx.cfg, etc., for your F7 series
             ],
             "searchDir": [
-                "D:/xpack-openocd-0.12.0-6-win32-x64/xpack-openocd-0.12.0-6/scripts", // IMPORTANT: Point to OpenOCD's 'scripts' directory
+                "D:/xpack-openocd-0.12.0-6-win32-x64/xpack-openocd-0.12.0-6/openocd/scripts", // IMPORTANT: Point to OpenOCD's 'scripts' directory
                 // "${workspaceFolder}/openocd_scripts" // Optional: If you have custom scripts
             ],
             "swoConfig": {

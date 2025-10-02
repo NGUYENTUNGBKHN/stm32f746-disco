@@ -1,4 +1,8 @@
 {
     "cortex-debug.variableUseNaturalFormat": false,
-    "makefile.makefilePath": "E:\\Project\\Embedded\\STM32\\stm32f746-disco\\normal\\ACE\\Bootloader\\Makefile"
+    "makefile.makefilePath": "E:\\Project\\Embedded\\STM32\\stm32f746-disco\\normal\\ACE\\Bootloader\\Makefile",
+    "files.associations": {
+        "*.h": "c",
+        "cstdint": "c"
+    }
 }

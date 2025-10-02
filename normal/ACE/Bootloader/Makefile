@@ -30,6 +30,7 @@ CCFLAGS+=$(CPU) $(FPU) $(OPT)
 CCFLAGS+=-ffunction-sections -fdata-sections -fno-strict-aliasing
 CCFLAGS+=-fno-builtin -fshort-enums
 CCFLAGS+=-Wall -Wno-unused-variable
+CCFLAGS+=-DSTM32F746xx
 
 ASMFLAG+=$(CPU) $(FPU) $(OPT)
 
@@ -60,6 +61,7 @@ INC_FOLDERS=\
 	$(COMMON_DIR)\
 	$(SDK_DIR)/Core/Include\
 	$(SDK_DIR)/Device/Include\
+	$(SDK_DIR)/Driver/hal\
 	$(SDK_DIR)/Driver/hal/Inc\
 	$(BOOT_DIR)\
 	$(BOOT_DIR)/operation\

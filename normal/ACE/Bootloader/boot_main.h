@@ -23,6 +23,7 @@ extern "C"
 #include "common.h"
 #include "memory_map.h"
 #include "bootloader.h"
+#include "stm32f7xx_hal_conf.h"
 
 #ifdef __cplusplus
 }
