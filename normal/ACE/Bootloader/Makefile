@@ -49,6 +49,8 @@ SRC_EXCLUDE=\
 SRC_INCLUDE+=$(wildcard *.c)
 SRC_INCLUDE+=$(wildcard $(BOOT_DIR)/*.c)
 SRC_INCLUDE+=$(wildcard $(BOOT_DIR)/operation/*.c)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_rcc.c)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_rcc_ex.c)
 SRC_INCLUDE+=$(wildcard *.s)
 # SRC_INCLUDE+=$(wildcard $(EXTERNAL_DIR)/segger_rtt/*.c)
 # SRC_FILES+=$(wildcard $(OSKERNEL_DIR)/*.s)
@@ -58,6 +60,7 @@ INC_FOLDERS=\
 	$(COMMON_DIR)\
 	$(SDK_DIR)/Core/Include\
 	$(SDK_DIR)/Device/Include\
+	$(SDK_DIR)/Driver/hal/Inc\
 	$(BOOT_DIR)\
 	$(BOOT_DIR)/operation\
 
