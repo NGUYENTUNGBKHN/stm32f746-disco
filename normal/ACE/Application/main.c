@@ -10,9 +10,7 @@
     Japan CashMachine Co, Limited. All rights reserved.
 ******************************************************************************/
 
-#include <stdint.h>
-#include <stdio.h>
-#include "common.h"
+#include "main.h"
 
 int main()
 {

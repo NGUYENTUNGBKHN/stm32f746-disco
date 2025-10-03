@@ -124,6 +124,11 @@
             "device": "STM32F746NG", // <--- IMPORTANT: Adjust for your specific F746 part (e.g., STM32F746VG, STM32F746NG, etc.)
             "svdFile": "${workspaceFolder}/svd/STM32F746x.svd", // <--- IMPORTANT: Path to your SVD file
             "interface": "swd",
+            "postRestartCommands": [
+                "load",       // Load the executable onto the target (flashes it)
+                "monitor reset and halt", // Ensure CPU is halted after flash
+                "break main"  // Set a breakpoint at the main function
+            ],
             "runToEntryPoint": "main", // Start debugging at the 'main' function
             // "preLaunchTask": "build", // Optional: Task to build your project before launching debugger (requires tasks.json)
             // "openOCDPath": "D:/xpack-openocd-0.12.0-6-win32-x64/xpack-openocd-0.12.0-6/bin/openocd.exe", // <--- IMPORTANT: Path to your OpenOCD executable (adjust for Windows/macOS)
@@ -160,7 +165,7 @@
             "device": "STM32F746NG", // <--- IMPORTANT: Adjust for your specific F746 part (e.g., STM32F746VG, STM32F746NG, etc.)
             "svdFile": "${workspaceFolder}/svd/STM32F746x.svd", // <--- IMPORTANT: Path to your SVD file
             "interface": "swd",
-            "runToEntryPoint": "main", // Start debugging at the 'main' function
+            "runToEntryPoint": "none", // Start debugging at the 'main' function
             // "loadMode": "manual",
             "loadFiles": [
                 "${workspaceFolder}/normal/ACE/Bootloader/_build/boot.out",

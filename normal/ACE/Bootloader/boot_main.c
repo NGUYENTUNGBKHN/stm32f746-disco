@@ -13,6 +13,7 @@
 
 uint16_t test[30];
 
+static void MPU_Config();
 static void SystemClock_Config();
 static void Error_Handler(void);
 static void jump_to_application();
@@ -20,10 +21,14 @@ static void jump_to_bootloader();
 
 int boot_main()
 {
+    /* MPU initialize */
+    MPU_Config();
+    /* HAL initialize */
     HAL_Init();
+    /* Clock configuration */
     SystemClock_Config();
     TRACE_INFO("Bootloader \n");
-    if (0)
+    if (1)
     {
         TRACE_INFO("jumping to application \n");
         jump_to_application();
@@ -70,11 +75,36 @@ static void jump_to_bootloader()
     bootloader();
 }
 
+static void MPU_Config()
+{
+    MPU_Region_InitTypeDef MPU_InitStruct = {0};
+
+    /* Disables the MPU */
+    HAL_MPU_Disable();
+
+    /** Initializes and configures the Region and the memory to be protected
+     */
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+    MPU_InitStruct.BaseAddress = 0x0;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
+    MPU_InitStruct.SubRegionDisable = 0x87;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
+    /* Enables the MPU */
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
     
 
 static void SystemClock_Config()
 {
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
     /* Enable HSE Oscillator and activate PLL with HSE as source */

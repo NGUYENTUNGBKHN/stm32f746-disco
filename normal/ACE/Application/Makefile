@@ -28,6 +28,7 @@ CCFLAGS+=$(CPU) $(FPU) $(OPT)
 CCFLAGS+=-ffunction-sections -fdata-sections -fno-strict-aliasing
 CCFLAGS+=-fno-builtin -fshort-enums
 CCFLAGS+=-Wall -Wno-unused-variable
+CCFLAGS+=-DSTM32F746xx
 
 ASMFLAG+=$(CPU) $(FPU) $(OPT)
 
@@ -46,6 +47,13 @@ SRC_EXCLUDE=\
 
 SRC_INCLUDE+=$(wildcard *.c)
 SRC_INCLUDE+=$(wildcard *.s)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Device/Src/*.c)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal.c)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_cortex.c)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_rcc.c)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_rcc_ex.c)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_pwr.c)
+SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_pwr_ex.c)
 # SRC_INCLUDE+=$(wildcard $(EXTERNAL_DIR)/segger_rtt/*.c)
 # SRC_FILES+=$(wildcard $(OSKERNEL_DIR)/*.s)
 SRC_FILES:=$(filter-out $(SRC_EXCLUDE), $(SRC_INCLUDE))
@@ -54,6 +62,8 @@ INC_FOLDERS=\
 	$(COMMON_DIR)\
 	$(SDK_DIR)/Core/Include\
 	$(SDK_DIR)/Device/Include\
+	$(SDK_DIR)/Driver/hal\
+	$(SDK_DIR)/Driver/hal/Inc\
 
 LIBS+=
 # LIBS+=-lc -lm

@@ -41,6 +41,15 @@ static void bootloader_dwl();
 **                          FUNCTION DEFINITIONS
 *******************************************************************************/
 
+extern void _entry_download();
+extern void _entry_download2();
+
+void (*const _entry_dwl_func[])(void) __attribute__((section(".entry_dwl"), used)) = 
+{
+    _entry_download,
+    _entry_download2
+};
+
 /**
  * 
  */
@@ -64,6 +73,26 @@ void bootloader()
         // bootloader_dwl(cmd);
     }
     
+}
+
+void _entry_download()
+{
+    TRACE_INFO("download\n");
+    while (1)
+    {
+        /* code */
+        // bootloader_dwl(cmd);
+    }
+}
+
+void _entry_download2()
+{
+    TRACE_INFO("download2\n");
+    while (1)
+    {
+        /* code */
+        // bootloader_dwl(cmd);
+    }
 }
 
 static void bootloader_dwl(uint32_t cmd)

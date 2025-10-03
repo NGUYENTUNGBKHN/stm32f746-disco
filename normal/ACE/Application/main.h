@@ -1,32 +1,29 @@
 /******************************************************************************/
 /*! @addtogroup Group2
-    @file       memory_map.h
+    @file       main.h
     @brief      
-    @date       2025/08/05
+    @date       2025/10/03
     @author     Development Dept at Tokyo (nguyen-thanh-tung@jcm-hq.co.jp)
     @par        Revision
     $Id$
     @par        Copyright (C)
     Japan CashMachine Co, Limited. All rights reserved.
 ******************************************************************************/
-#ifndef _MEMORY_MAP_H_
-#define _MEMORY_MAP_H_
+
+#ifndef _MAIN_H_
+#define _MAIN_H_
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* CODE */
-#define FUNC(x)     (*((void (**)(void)) x ))
-
-
-#define APP_START_ADDRESS   0x08040000
-#define APP_SIZE            0x3FFFF      
-
-#define DWL_START_ADDRESS   0x08008000
-
-#define entry_dwl       FUNC(DWL_START_ADDRESS)
-#define entry_dwl2      FUNC((DWL_START_ADDRESS + 4))
+#include <stdint.h>
+#include <stdio.h>
+#include "common.h"
+#include "memory_map.h"
+#include "stm32f7xx_hal_conf.h"
+#include "stm32f7xx_hal.h"
 
 #ifdef __cplusplus
 }

@@ -1,32 +1,22 @@
 /******************************************************************************/
 /*! @addtogroup Group2
-    @file       memory_map.h
+    @file       app_it.h
     @brief      
-    @date       2025/08/05
+    @date       2025/10/03
     @author     Development Dept at Tokyo (nguyen-thanh-tung@jcm-hq.co.jp)
     @par        Revision
     $Id$
     @par        Copyright (C)
     Japan CashMachine Co, Limited. All rights reserved.
 ******************************************************************************/
-#ifndef _MEMORY_MAP_H_
-#define _MEMORY_MAP_H_
+#ifndef _APP_IT_H_
+#define _APP_IT_H_
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* CODE */
-#define FUNC(x)     (*((void (**)(void)) x ))
-
-
-#define APP_START_ADDRESS   0x08040000
-#define APP_SIZE            0x3FFFF      
-
-#define DWL_START_ADDRESS   0x08008000
-
-#define entry_dwl       FUNC(DWL_START_ADDRESS)
-#define entry_dwl2      FUNC((DWL_START_ADDRESS + 4))
 
 #ifdef __cplusplus
 }

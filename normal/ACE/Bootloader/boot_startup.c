@@ -10,6 +10,7 @@
     Japan CashMachine Co, Limited. All rights reserved.
 ******************************************************************************/
 #include <stdint.h>
+#include "system_stm32f7xx.h"
 
 
 extern uint32_t _estack;
@@ -32,7 +33,7 @@ void Reset_Handler()
     volatile uint32_t *data = &_sidata;
     volatile uint32_t *bss_start = &_sbss;
     volatile uint32_t *bss_end = &_ebss;
-
+    SystemInit();
     while (start < end)
     {
         /* code */
