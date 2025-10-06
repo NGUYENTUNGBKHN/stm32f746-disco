@@ -68,13 +68,13 @@ INC_FOLDERS=\
 LIBS+=
 # LIBS+=-lc -lm
 
-
 .PHONY:	default help
 
-default: $(TARGET_NAME)
+default: $(TARGET_NAME) 
 
 # Include common makefile. File contains TOOLCHAIN directory and rules for building targets
 -include $(MAKE_COMMON)/Makefile.common
+
 
 # Call function to define targets 
 $(foreach target, $(TARGET_NAME), $(call define_target, $(target)))
