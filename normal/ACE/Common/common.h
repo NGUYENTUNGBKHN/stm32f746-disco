@@ -27,8 +27,8 @@ extern "C"
 #define TRACE_INFO(format, ... )                                                        \
     printf("%s (%d) : " format, __FUNCTION__, __LINE__, ##__VA_ARGS__)                  \
 /* TRACE info : normal log */
-#define ERROR(code)                                                                     \
-    printf("%s %s (%d) : error code = %d \n", __FILE__, __FUNCTION__, __LINE__, code)   \
+#define ERROR(format, ... )                                                              \
+    printf("%s (%d) : " format, __FUNCTION__, __LINE__, ##__VA_ARGS__)                  \
 
 #else
 #define TRACE_INFO(__format__, ...)

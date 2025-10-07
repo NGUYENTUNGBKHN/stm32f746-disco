@@ -24,6 +24,7 @@ extern "C"
 #include "memory_map.h"
 #include "stm32f7xx_hal_conf.h"
 #include "stm32f7xx_hal.h"
+#include "w25q128j.h"
 
 #ifdef __cplusplus
 }
