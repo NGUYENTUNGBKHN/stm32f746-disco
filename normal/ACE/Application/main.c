@@ -31,6 +31,7 @@ QSPI_HandleTypeDef QSPIHandle;
 __IO uint8_t CmdCplt, RxCplt, TxCplt, StatusMatch;
 QSPI_CommandTypeDef sCommand;
 QSPI_MemoryMappedTypeDef sMemMappedCfg;
+volatile static uint8_t count = 0;
 /*******************************************************************************
 **                      INTERNAL FUNCTION PROTOTYPES
 *******************************************************************************/
@@ -96,7 +97,7 @@ int main()
     /* Clock configuration */
     SystemClock_Config();
     TRACE_INFO("Entered Application \n");
-
+    #if 0
     w25q128j_t *test = W25Q128J_Create();
     test->init(test);
 
@@ -115,10 +116,36 @@ int main()
     {
         TRACE_INFO("DONE.\n");
     }
+    #else
+    w25q128j_t *test = W25Q128J_Create();
+    test->init(test);
+
+    // test->erase_block(test, WRITE_READ_ADDR);
+
+    // Fill_Buffer(qspi_aTxBuffer, BUFFER_SIZE, 0xD20F);
+    // test->write(test, qspi_aTxBuffer, WRITE_READ_ADDR, BUFFER_SIZE);
+
+    // test->read(test, qspi_aRxBuffer, WRITE_READ_ADDR, BUFFER_SIZE);
+
+    // if (Buffercmp(qspi_aTxBuffer, qspi_aRxBuffer, BUFFER_SIZE) > 0)
+    // {
+    //     TRACE_INFO("FAIL.\n");
+    // }
+    // else
+    // {
+    //     TRACE_INFO("DONE.\n");
+    // }
+    uint8_t res = test->mapped_memory(test);
+    #endif 
+
+    uint8_t byte0 = *(__IO uint8_t *)(ST_QSPI_MAPPING_ADDRESS);
+    TRACE_INFO("byte0 = %d\n", byte0);
+
 
     while (1)
     {
         /* code */
+        test_led();
 
     }
 }
@@ -228,6 +255,7 @@ static void CPU_CACHE_Enable()
     /* Enable D-Cache */
     SCB_EnableDCache();
 }
+
 
 static void Error_Handler()
 {

@@ -175,6 +175,7 @@ struct W25Q128J_S
     void (*write)(w25q128j_t *self, uint8_t *data, uint32_t addr, uint32_t size);
     void (*read)(w25q128j_t *self, uint8_t *data, uint32_t addr, uint32_t size);
     uint8_t (*erase_block)(w25q128j_t *self, uint32_t BlockAddress);
+    uint8_t (*mapped_memory)(w25q128j_t *self);
 };
 
 w25q128j_t *W25Q128J_Create();

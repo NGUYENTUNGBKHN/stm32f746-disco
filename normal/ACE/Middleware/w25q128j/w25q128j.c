@@ -541,6 +541,7 @@ w25q128j_t *W25Q128J_Create()
     w25_qspi->write = W25Q128J_Write;
     w25_qspi->read = W25Q128J_Read;
     w25_qspi->erase_block = W25Q128J_Erase_Block;
+    w25_qspi->mapped_memory = W25Q128J_EnableMemoryMappedMode;
 
     return w25_qspi;
 }

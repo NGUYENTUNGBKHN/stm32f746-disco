@@ -31,6 +31,8 @@ extern "C"
 /*   */
 
 
+#define ST_QSPI_FLASH_BASE          0x90000000
+
 #define APP_START_ADDRESS   0x08040000
 #define APP_SIZE            0x3FFFF      
 
@@ -38,6 +40,8 @@ extern "C"
 
 #define entry_dwl       FUNC(DWL_START_ADDRESS)
 #define entry_dwl2      FUNC((DWL_START_ADDRESS + 4))
+
+#define test_led        FUNC(ST_QSPI_FLASH_BASE)
 
 #ifdef __cplusplus
 }

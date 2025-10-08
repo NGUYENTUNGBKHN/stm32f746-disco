@@ -14,6 +14,7 @@ MEMORY
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 64K
   FLASH    (rx)   : ORIGIN = 0x8000000,   LENGTH = 32K /* SECTOR 0 */
   DWL_FLASH (rx)  : ORIGIN = 0x8008000,  LENGTH = 32K /* SECTOR 1 */
+  QSPI    (xrw)  : ORIGIN = 0x90000000, LENGTH = 16M
 }
 
 /* Sections */
@@ -75,6 +76,17 @@ SECTIONS
   {
 	  KEEP(*(.entry_dwl))
   } >DWL_FLASH
+
+  .qspi :
+  {
+    . = ALIGN(4);
+    _qspi_start = .;        /* create a global symbol at qspi start */
+    *(.qspi)         /* .qspi sections */
+    *(.qspi*)        /* .qspi* sections */
+    . = ALIGN(4);
+    _qspi_end = .;         /* define a global symbols at end of qspi */
+    
+  } >QSPI
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);

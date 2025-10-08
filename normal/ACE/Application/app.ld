@@ -13,6 +13,7 @@ MEMORY
 {
   SRAM1    (xrw)    : ORIGIN = 0x20010000,   LENGTH = 240K
   FLASH    (rx)    : ORIGIN = 0x08040000,   LENGTH = 256K     /* SECTOR 5 */
+  QSPI    (xrw)  : ORIGIN = 0x90000000, LENGTH = 16M
 }
 
 /* Sections */
@@ -51,6 +52,20 @@ SECTIONS
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
   } >FLASH
+
+  _qspi_init_base = LOADADDR(.qspi);
+  _qspi_init_length = SIZEOF(.qspi);
+  
+  .qspi :
+  {
+    . = ALIGN(4);
+    _qspi_start = .;        /* create a global symbol at qspi start */
+    *(.qspi)         /* .qspi sections */
+    *(.qspi*)        /* .qspi* sections */
+    . = ALIGN(4);
+    _qspi_end = .;         /* define a global symbols at end of qspi */
+    
+  } >QSPI
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);

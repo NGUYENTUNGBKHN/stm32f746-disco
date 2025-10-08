@@ -19,6 +19,12 @@ static void Error_Handler(void);
 static void jump_to_application();
 static void jump_to_bootloader();
 
+static void __attribute__((section(".qspi"))) GpioToggle(void)
+{
+    TRACE_INFO("mapping done\n");
+    HAL_Delay(500);
+}
+
 int boot_main()
 {
     /* MPU initialize */
@@ -28,6 +34,7 @@ int boot_main()
     /* Clock configuration */
     SystemClock_Config();
     TRACE_INFO("Bootloader \n");
+    GpioToggle();
     if (1)
     {
         TRACE_INFO("jumping to application \n");
