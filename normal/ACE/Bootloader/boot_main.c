@@ -20,28 +20,18 @@ static void jump_to_application();
 static void jump_to_bootloader();
 static void CPU_CACHE_Enable();
 
-void __attribute__((section(".qspi"))) GpioToggle(void)
-{
-    TRACE_INFO("mapping done\n");
-    HAL_Delay(500);
-}
-
 int boot_main()
 {
     /* MPU initialize */
     MPU_Config();
     /* CPU cache Enable */
-    CPU_CACHE_Enable();
+    // CPU_CACHE_Enable();
     /* HAL initialize */
     HAL_Init();
     /* Clock configuration */
     SystemClock_Config();
     TRACE_INFO("Bootloader \n");
-    w25q128j_t *test = W25Q128J_Create();
-    test->init(test);
-    test->mapped_memory(test);
-    HAL_Delay(500);
-    GpioToggle();
+
     if (1)
     {
         TRACE_INFO("jumping to application \n");
