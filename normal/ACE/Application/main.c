@@ -13,11 +13,17 @@
 **                                INCLUDES
 *******************************************************************************/
 #include "main.h"
+#include "tx_api.h"
 /*******************************************************************************
 **                       INTERNAL MACRO DEFINITIONS
 *******************************************************************************/
 #define BUFFER_SIZE         ((uint32_t)0x0200)
 #define WRITE_READ_ADDR     ((uint32_t)0x0050)
+
+#define DEMO_STACK_SIZE         1024
+#define DEMO_BYTE_POOL_SIZE     9120
+#define DEMO_BLOCK_POOL_SIZE    100
+#define DEMO_QUEUE_SIZE         100
 /*******************************************************************************
 **                      COMMON VARIABLE DEFINITIONS
 *******************************************************************************/
@@ -32,10 +38,19 @@ __IO uint8_t CmdCplt, RxCplt, TxCplt, StatusMatch;
 QSPI_CommandTypeDef sCommand;
 QSPI_MemoryMappedTypeDef sMemMappedCfg;
 volatile static uint8_t count = 0;
+
+ULONG                   thread_0_counter;
+ULONG                   thread_1_counter;
+
+TX_BYTE_POOL            byte_pool_0;
+TX_THREAD               thread_0;
+TX_THREAD               thread_1;
+UCHAR                   memory_area[DEMO_BYTE_POOL_SIZE];
 /*******************************************************************************
 **                      INTERNAL FUNCTION PROTOTYPES
 *******************************************************************************/
-
+void    thread_0_entry(ULONG thread_input);
+void    thread_1_entry(ULONG thread_input);
 
 /*******************************************************************************
 **                          FUNCTION DEFINITIONS
@@ -97,52 +112,11 @@ int main()
     /* Clock configuration */
     SystemClock_Config();
     TRACE_INFO("Entered Application \n");
-    #if 0
-    w25q128j_t *test = W25Q128J_Create();
-    test->init(test);
 
-    test->erase_block(test, WRITE_READ_ADDR);
+    /* Enter the ThreadX kernel.  */
+    tx_kernel_enter();
 
-    Fill_Buffer(qspi_aTxBuffer, BUFFER_SIZE, 0xD20F);
-    test->write(test, qspi_aTxBuffer, WRITE_READ_ADDR, BUFFER_SIZE);
-
-    test->read(test, qspi_aRxBuffer, WRITE_READ_ADDR, BUFFER_SIZE);
-
-    if (Buffercmp(qspi_aTxBuffer, qspi_aRxBuffer, BUFFER_SIZE) > 0)
-    {
-        TRACE_INFO("FAIL.\n");
-    }
-    else
-    {
-        TRACE_INFO("DONE.\n");
-    }
-    #else
-    // w25q128j_t *test = W25Q128J_Create();
-    // test->init(test);
-
-    // // test->erase_block(test, WRITE_READ_ADDR);
-
-    // // Fill_Buffer(qspi_aTxBuffer, BUFFER_SIZE, 0xD20F);
-    // // test->write(test, qspi_aTxBuffer, WRITE_READ_ADDR, BUFFER_SIZE);
-
-    // // test->read(test, qspi_aRxBuffer, WRITE_READ_ADDR, BUFFER_SIZE);
-
-    // // if (Buffercmp(qspi_aTxBuffer, qspi_aRxBuffer, BUFFER_SIZE) > 0)
-    // // {
-    // //     TRACE_INFO("FAIL.\n");
-    // // }
-    // // else
-    // // {
-    // //     TRACE_INFO("DONE.\n");
-    // // }
-    // uint8_t res = test->mapped_memory(test);
-    #endif 
-
-    uint8_t byte0 = *(__IO uint8_t *)(ST_QSPI_MAPPING_ADDRESS);
-    TRACE_INFO("byte0 = %d\n", byte0);
-
-
-    while (1)
+    while (1) 
     {
         /* code */
         // test_led();
@@ -256,6 +230,82 @@ static void CPU_CACHE_Enable()
     SCB_EnableDCache();
 }
 
+void tx_application_define(void *first_unused_memory)
+{
+    CHAR    *pointer = TX_NULL;
+
+
+    /* Create a byte memory pool from which to allocate the thread stacks.  */
+    tx_byte_pool_create(&byte_pool_0, "byte pool 0", memory_area, DEMO_BYTE_POOL_SIZE);
+
+    /* Put system definition stuff in here, e.g. thread creates and other assorted
+       create information.  */
+
+    /* Allocate the stack for thread 0.  */
+    tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, DEMO_STACK_SIZE, TX_NO_WAIT);
+
+    /* Create the main thread.  */
+    tx_thread_create(&thread_0, "thread 0", thread_0_entry, 0,  
+            pointer, DEMO_STACK_SIZE, 
+            1, 1, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+
+    /* Allocate the stack for thread 1.  */
+    tx_byte_allocate(&byte_pool_0, (VOID **) &pointer, DEMO_STACK_SIZE, TX_NO_WAIT);
+
+    /* Create threads 1 and 2. These threads pass information through a ThreadX 
+       message queue.  It is also interesting to note that these threads have a time
+       slice.  */
+    tx_thread_create(&thread_1, "thread 1", thread_1_entry, 1,  
+            pointer, DEMO_STACK_SIZE, 
+            16, 16, 4, TX_AUTO_START);
+
+    /* Release the block back to the pool.  */
+    tx_block_release(pointer);
+    TRACE_INFO("OS int done.\n");
+}
+
+/* Define the test threads.  */
+
+void thread_0_entry(ULONG thread_input)
+{   
+    UINT status = TX_SUCCESS;
+
+    /* This thread simply sits in while-forever-sleep loop.  */
+    while(1)
+    {
+
+        /* Increment the thread counter.  */
+        thread_0_counter++;
+
+        /* Sleep for 10 ticks.  */
+        tx_thread_sleep(10);
+
+        /* Set event flag 0 to wakeup thread 5.  */
+        // status =  tx_event_flags_set(&event_flags_0, 0x1, TX_OR);
+    }
+}
+
+void thread_1_entry(ULONG thread_input)
+{
+
+    UINT status = TX_SUCCESS;
+
+    /* This thread simply sends messages to a queue shared by thread 2.  */
+    while (1)
+    {
+
+        /* Increment the thread counter.  */
+        thread_1_counter++;
+
+        /* Send message to queue 0.  */
+        // status =  tx_queue_send(&queue_0, &thread_1_messages_sent, TX_WAIT_FOREVER);
+        tx_thread_sleep(10);
+
+        /* Increment the message sent.  */
+        // thread_1_messages_sent++;
+    }
+}
 
 static void Error_Handler()
 {

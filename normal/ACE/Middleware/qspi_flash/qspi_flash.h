@@ -32,12 +32,30 @@ extern "C"
 #define QUADSPI_BK1_IO3_pin     GPIO_PIN_13         
 
 
+typedef struct QSPI_FLASH_CMD_S
+{
+    uint32_t Instruction;
+    uint32_t Address;
+    uint32_t AlternateBytes;
+    uint32_t AddressSize;
+    uint32_t AlternateBytesSize;
+    uint32_t DummyCycles;
+    uint32_t InstructionModes;
+    uint32_t AddressMode;
+    uint32_t AlternateByteMode;
+    uint32_t DataMode;
+    uint32_t NbData;
+    uint32_t DdrMode;
+    uint32_t DdrHoldHalfCycle;
+    uint32_t SIOOMode;
+}qspi_flash_cmd_t;
+
 typedef struct QSPI_FLASH_S qspi_flash_t;
 
 struct QSPI_FLASH_S
 {
     /* data */
-    QSPI_HandleTypeDef *handle;
+    QUADSPI_TypeDef *pQspi;
     void (*init)(qspi_flash_t *self);
     void (*read)(qspi_flash_t *self, uint32_t address, uint8_t data, uint16_t size);
     void (*write)(qspi_flash_t *self, uint32_t address, uint8_t data, uint16_t size);

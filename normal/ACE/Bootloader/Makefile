@@ -52,16 +52,16 @@ SRC_INCLUDE+=$(wildcard *.c)
 SRC_INCLUDE+=$(wildcard $(BOOT_DIR)/*.c)
 SRC_INCLUDE+=$(wildcard $(MID_DIR)/w25q128j/*.c)
 SRC_INCLUDE+=$(wildcard $(BOOT_DIR)/operation/*.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Device/Src/*.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_cortex.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_rcc.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_rcc_ex.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_pwr.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_pwr_ex.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_qspi.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_dma.c)
-SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_gpio.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Device/Src/*.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_cortex.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_rcc.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_rcc_ex.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_pwr.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_pwr_ex.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_qspi.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_dma.c)
+# SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_gpio.c)
 SRC_INCLUDE+=$(wildcard *.s)
 # SRC_INCLUDE+=$(wildcard $(EXTERNAL_DIR)/segger_rtt/*.c)
 # SRC_FILES+=$(wildcard $(OSKERNEL_DIR)/*.s)
@@ -77,7 +77,7 @@ INC_FOLDERS=\
 	$(BOOT_DIR)/operation\
 	$(MID_DIR)/w25q128j\
 
-LIBS+=
+LIBS+=$(SDK_DIR)/_build/stm32_lib.a
 # LIBS+=-lc -lm
 
 

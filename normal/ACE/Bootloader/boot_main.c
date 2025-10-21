@@ -25,7 +25,7 @@ int boot_main()
     /* MPU initialize */
     MPU_Config();
     /* CPU cache Enable */
-    // CPU_CACHE_Enable();
+    CPU_CACHE_Enable();
     /* HAL initialize */
     HAL_Init();
     /* Clock configuration */
