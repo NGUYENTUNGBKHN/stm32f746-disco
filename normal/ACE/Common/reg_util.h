@@ -23,13 +23,13 @@ extern "C"
 /* Read value of address register reg */
 #define REG_READ(reg)                       ((reg))
 /* Set at bit position of reg */
-#define REG_SET_BIT(reg, pos)               ((reg) |= (1 << pos))
+#define REG_SET_BIT(reg, pos)               ((reg) |= (1 << (pos)))
 /* Clear at bit position of reg */
-#define REG_CLR_BIT(reg, pos)               ((reg) &= ~(1 << pos))
+#define REG_CLR_BIT(reg, pos)               ((reg) &= ~(1 << (pos)))
 /* Read at bit postion of reg */
-#define REG_READ_BIT(reg, pos)              ((reg) & (1 << pos))
+#define REG_READ_BIT(reg, pos)              ((reg) & (1 << (pos)))
 
-#define REG_CLR_VAL(reg, clrmask, pos)      ((reg) &= ~(clrmask << pos))
+#define REG_CLR_VAL(reg, clrmask, pos)      ((reg) &= ~(clrmask << (pos)))
 
 #define REG_SET_VAL(reg, val, setmask, pos) do{\
                                                 REG_CLR_VAL(reg, setmask, pos);\

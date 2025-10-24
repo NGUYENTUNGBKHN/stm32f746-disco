@@ -11,7 +11,9 @@
 /*******************************************************************************
 **                                INCLUDES
 *******************************************************************************/
+#include "stdlib.h"
 #include "qspi_flash.h"
+#include "w25q128j_reg.h"
 /*******************************************************************************
 **                       INTERNAL MACRO DEFINITIONS
 *******************************************************************************/
@@ -34,7 +36,7 @@ static void qspi_flash_setup_pin();
 static void qspi_flash_setup_drive(QUADSPI_TypeDef *pQspi);
 static void qspi_flash_reset(QUADSPI_TypeDef *pQspi);
 static void qspi_flash_cmd_send(QUADSPI_TypeDef *pQspi, qspi_flash_cmd_t cmd);
-static void qspi_flash_cmd_cfg(QUADSPI_TypeDef *pQspi, qspi_flash_cmd_t cmd);
+static void qspi_flash_cmd_cfg(QUADSPI_TypeDef *pQspi, qspi_flash_cmd_t *cmd, uint32_t mode);
 
 /*******************************************************************************
 **                          FUNCTION DEFINITIONS
@@ -44,7 +46,7 @@ static void qspi_flash_init(qspi_flash_t *self)
 {
     qspi_flash_setup_pin();
     qspi_flash_setup_drive(self->pQspi);
-    // qspi_flash_reset(self->pQspi);
+    qspi_flash_reset(self->pQspi);
 }
 
 static void qspi_flash_write(qspi_flash_t *self, uint32_t address, uint8_t data, uint16_t size)
@@ -76,7 +78,7 @@ qspi_flash_t *qspi_flash_create()
     m_qspi_flash->read = qspi_flash_read;
     m_qspi_flash->write = qspi_flash_write;
     m_qspi_flash->memory_mapped = qspi_flash_memo_mapped;
-    TRACE_INFO("compeled \n");
+    TRACE_INFO("completed \n");
 
     return m_qspi_flash;
 }
@@ -156,36 +158,294 @@ static void qspi_flash_setup_drive(QUADSPI_TypeDef *pQspi)
     /* 7. Configure QSPI flash size */
     REG_SET_VAL(pQspi->DCR, 0x17U, 0x1FU, QUADSPI_DCR_FSIZE_Pos);
 
-
     /* Enable QSPI */
     REG_SET_BIT(pQspi->CR, QUADSPI_CR_EN_Pos);
 }
 
-static void qspi_flash_cmd_send(QUADSPI_TypeDef *pQspi, qspi_flash_cmd_t cmd)
+static void qspi_flash_cmd(QUADSPI_TypeDef *pQspi, qspi_flash_cmd_t *cmd)
 {
     while (REG_READ_BIT(pQspi->SR, QUADSPI_SR_BUSY_Pos) != 0)
     {
         /* code */
+        // ERROR("error\n;");
     }
 
+    qspi_flash_cmd_cfg(pQspi, cmd, QUADSPI_FMODE_INDIRECT_WRITE);
 
-    qspi_flash_cmd_cfg(pQspi, cmd);
-
+    if (cmd->DataMode == QUADSPI_DATA_MODE_NONE)
+    {   
+        while (REG_READ_BIT(pQspi->SR, QUADSPI_SR_TCF_Pos) == 0)
+        {
+            /* code */
+            // ERROR("error\n;");
+        }
+        REG_SET_BIT(pQspi->FCR, QUADSPI_FCR_CTCF_Pos);
+        pQspi->FCR |= (1 << QUADSPI_FCR_CTCF_Pos);
+    }
 }
 
-static void qspi_flash_cmd_cfg(QUADSPI_TypeDef *pQspi, qspi_flash_cmd_t cmd)
+static void qspi_flash_transmit(QUADSPI_TypeDef *pQspi, uint8_t *data, uint32_t timeout)
 {
-    /* 1. Configure QSPI : DLR register with the number of data to read or write */
-    // REG_SET_VAL(pQspi->DLR, );
+    uint32_t data_len = 0;
+    uint8_t *tmp_data = data;
+    REG_SET_VAL(pQspi->CCR, QUADSPI_FMODE_INDIRECT_WRITE, 0x3U, QUADSPI_CCR_FMODE_Pos);
+    data_len = REG_READ(pQspi->DLR) + 1U;
+    while (data_len > 0)
+    {
+        while (REG_READ_BIT(pQspi->SR, QUADSPI_SR_FTF_Pos) != 1)
+        {
+            /* code */
+            ERROR("error\n;");
+        }
+        REG_WRITE(pQspi->DR, *tmp_data);
+        tmp_data--;
+        data_len--;
+    }
+    while (REG_READ_BIT(pQspi->SR, QUADSPI_SR_TCF_Pos) != 1)
+    {
+        /* code */
+        ERROR("error\n;");
+    }
+
+    REG_SET_BIT(pQspi->FCR, QUADSPI_FCR_CTCF_Pos);
+}
+
+static void qspi_flash_receive(QUADSPI_TypeDef *pQspi, uint8_t *data, uint32_t timeout)
+{
+    uint32_t data_len = 0;
+    uint8_t *tmp_data = data;
+    uint32_t addr_reg = REG_READ(pQspi->AR);
+    REG_SET_VAL(pQspi->CCR, QUADSPI_FMODE_INDIRECT_READ, 0x3U, QUADSPI_CCR_FMODE_Pos);
+    data_len = REG_READ(pQspi->DLR) + 1U;
+
+    REG_WRITE(pQspi->AR, addr_reg);
+    while (data_len > 0)
+    {
+        while (((REG_READ_BIT(pQspi->SR, QUADSPI_SR_FTF_Pos)) || 
+                (REG_READ_BIT(pQspi->SR, QUADSPI_SR_TCF_Pos))) != 1)
+        {
+            /* code */
+            ERROR("error\n;");
+        }
+        REG_WRITE(pQspi->DR, *tmp_data);
+        tmp_data--;
+        data_len--;
+    }
+    while (REG_READ_BIT(pQspi->SR, QUADSPI_SR_TCF_Pos) != 1)
+    {
+        /* code */
+        ERROR("error\n;");
+    }
+
+    REG_SET_BIT(pQspi->FCR, QUADSPI_FCR_CTCF_Pos);
+}
+
+static void qspi_flash_cmd_cfg(QUADSPI_TypeDef *pQspi, qspi_flash_cmd_t *cmd, uint32_t mode)
+{
+    // if ((cmd->DataMode != QUADSPI_DATA_MODE_NONE) && (mode != QUADSPI_FMODE_MEMO))
+    // {
+    //     /* Configure QSPI : DLR register with the number of data to read or write */
+    //     REG_WRITE(pQspi->DLR, (cmd->NbData - 1U));
+    // }
+    
+    // /* 2. Configure QSPI : CCR register with frame format, mode and instruction code */
+    // /* 2.1 Instruction and instruction mode */
+    // REG_SET_VAL(pQspi->CCR, cmd->Instruction, 0xFF, QUADSPI_CCR_INSTRUCTION_Pos);
+    // REG_SET_VAL(pQspi->CCR, cmd->InstructionModes, 0x3U, QUADSPI_CCR_IMODE_Pos);
+    // /* 2.2 Address mode and address size */
+    // REG_SET_VAL(pQspi->CCR, cmd->AddressMode, 0x3U, QUADSPI_CCR_ADMODE_Pos);
+    // if (cmd->AddressMode != QUADSPI_ADR_MODE_NONE)
+    // {
+    //     REG_SET_VAL(pQspi->CCR, cmd->AddressSize, 0x3U, QUADSPI_CCR_ADSIZE_Pos);
+    //     if (mode != QUADSPI_FMODE_MEMO)
+    //     {
+    //         REG_WRITE(pQspi->AR, cmd->Address);
+    //     }
+    // }
+    // /* 2.3 Alternate mode and Alternate size */
+    // REG_SET_VAL(pQspi->CCR, cmd->AlternateByteMode, 0x3U, QUADSPI_CCR_ABMODE_Pos);
+    // if (cmd->AlternateByteMode != QUADSPI_ALB_MODE_NONE)
+    // {
+    //     REG_SET_VAL(pQspi->CCR, cmd->AlternateBytesSize, 0x3U, QUADSPI_CCR_ABSIZE_Pos);
+    //     REG_WRITE(pQspi->ABR, cmd->AlternateBytes);
+    // }
+    // /* 2.4 Data mode and data size */
+    // REG_SET_VAL(pQspi->CCR, cmd->DataMode, 0x3U, QUADSPI_CCR_DMODE_Pos);
+    // /* 2.5 Number of dummy cycles */
+    // REG_SET_VAL(pQspi->CCR, cmd->DummyCycles, 0xFU, QUADSPI_CCR_DCYC_Pos);
+    // /* 2.6  SIOO Sned instruction only once mode */
+    // REG_SET_VAL(pQspi->CCR, cmd->SIOOMode, 0x1U, QUADSPI_CCR_SIOO_Pos);
+    // /* 2.7  DDR hold */
+    // REG_SET_VAL(pQspi->CCR, cmd->DdrHoldHalfCycle, 0x1U, QUADSPI_CCR_DHHC_Pos);
+    // /* 2.8  Double data rate mode */
+    // REG_SET_VAL(pQspi->CCR, cmd->DdrMode, 0x1U, QUADSPI_CCR_DDRM_Pos);
+    if ((cmd->DataMode != QSPI_DATA_NONE) && (mode != QUADSPI_FMODE_MEMO))
+  {
+    /* Configure QSPI: DLR register with the number of data to read or write */
+    REG_WRITE(pQspi->DLR, (cmd->NbData - 1U));
+  }
+
+  if (cmd->InstructionModes != QSPI_INSTRUCTION_NONE)
+  {
+    if (cmd->AlternateByteMode != QSPI_ALTERNATE_BYTES_NONE)
+    {
+      /* Configure QSPI: ABR register with alternate bytes value */
+      REG_WRITE(pQspi->ABR, cmd->AlternateBytes);
+
+      if (cmd->AddressMode != QSPI_ADDRESS_NONE)
+      {
+        /*---- Command with instruction, address and alternate bytes ----*/
+        /* Configure QSPI: CCR register with all communications parameters */
+        REG_WRITE(pQspi->CCR, (cmd->DdrMode | cmd->DdrHoldHalfCycle | cmd->SIOOMode |
+                                         cmd->DataMode | (cmd->DummyCycles << QUADSPI_CCR_DCYC_Pos) |
+                                         cmd->AlternateBytesSize | cmd->AlternateByteMode |
+                                         cmd->AddressSize | cmd->AddressMode | cmd->InstructionModes |
+                                         cmd->Instruction | mode));
+
+        if (mode != QUADSPI_FMODE_MEMO)
+        {
+          /* Configure QSPI: AR register with address value */
+          REG_WRITE(pQspi->AR, cmd->Address);
+        }
+      }
+      else
+      {
+        /*---- Command with instruction and alternate bytes ----*/
+        /* Configure QSPI: CCR register with all communications parameters */
+        REG_WRITE(pQspi->CCR, (cmd->DdrMode | cmd->DdrHoldHalfCycle | cmd->SIOOMode |
+                                         cmd->DataMode | (cmd->DummyCycles << QUADSPI_CCR_DCYC_Pos) |
+                                         cmd->AlternateBytesSize | cmd->AlternateByteMode |
+                                         cmd->AddressMode | cmd->InstructionModes |
+                                         cmd->Instruction | mode));
+      }
+    }
+    else
+    {
+      if (cmd->AddressMode != QSPI_ADDRESS_NONE)
+      {
+        /*---- Command with instruction and address ----*/
+        /* Configure QSPI: CCR register with all communications parameters */
+        REG_WRITE(pQspi->CCR, (cmd->DdrMode | cmd->DdrHoldHalfCycle | cmd->SIOOMode |
+                                         cmd->DataMode | (cmd->DummyCycles << QUADSPI_CCR_DCYC_Pos) |
+                                         cmd->AlternateByteMode | cmd->AddressSize | cmd->AddressMode |
+                                         cmd->InstructionModes | cmd->Instruction | mode));
+
+        if (mode != QUADSPI_FMODE_MEMO)
+        {
+          /* Configure QSPI: AR register with address value */
+          REG_WRITE(pQspi->AR, cmd->Address);
+        }
+      }
+      else
+      {
+        /*---- Command with only instruction ----*/
+        /* Configure QSPI: CCR register with all communications parameters */
+        REG_WRITE(pQspi->CCR, (cmd->DdrMode | cmd->DdrHoldHalfCycle | cmd->SIOOMode |
+                                         cmd->DataMode | (cmd->DummyCycles << QUADSPI_CCR_DCYC_Pos) |
+                                         cmd->AlternateByteMode | cmd->AddressMode |
+                                         cmd->InstructionModes | cmd->Instruction | mode));
+      }
+    }
+  }
+  else
+  {
+    if (cmd->AlternateByteMode != QSPI_ALTERNATE_BYTES_NONE)
+    {
+      /* Configure QSPI: ABR register with alternate bytes value */
+      REG_WRITE(pQspi->ABR, cmd->AlternateBytes);
+
+      if (cmd->AddressMode != QSPI_ADDRESS_NONE)
+      {
+        /*---- Command with address and alternate bytes ----*/
+        /* Configure QSPI: CCR register with all communications parameters */
+        REG_WRITE(pQspi->CCR, (cmd->DdrMode | cmd->DdrHoldHalfCycle | cmd->SIOOMode |
+                                         cmd->DataMode | (cmd->DummyCycles << QUADSPI_CCR_DCYC_Pos) |
+                                         cmd->AlternateBytesSize | cmd->AlternateByteMode |
+                                         cmd->AddressSize | cmd->AddressMode |
+                                         cmd->InstructionModes | mode));
+
+        if (mode != QUADSPI_FMODE_MEMO)
+        {
+          /* Configure QSPI: AR register with address value */
+          REG_WRITE(pQspi->AR, cmd->Address);
+        }
+      }
+      else
+      {
+        /*---- Command with only alternate bytes ----*/
+        /* Configure QSPI: CCR register with all communications parameters */
+        REG_WRITE(pQspi->CCR, (cmd->DdrMode | cmd->DdrHoldHalfCycle | cmd->SIOOMode |
+                                         cmd->DataMode | (cmd->DummyCycles << QUADSPI_CCR_DCYC_Pos) |
+                                         cmd->AlternateBytesSize | cmd->AlternateByteMode |
+                                         cmd->AddressMode | cmd->InstructionModes | mode));
+      }
+    }
+    else
+    {
+      if (cmd->AddressMode != QSPI_ADDRESS_NONE)
+      {
+        /*---- Command with only address ----*/
+        /* Configure QSPI: CCR register with all communications parameters */
+        REG_WRITE(pQspi->CCR, (cmd->DdrMode | cmd->DdrHoldHalfCycle | cmd->SIOOMode |
+                                         cmd->DataMode | (cmd->DummyCycles << QUADSPI_CCR_DCYC_Pos) |
+                                         cmd->AlternateByteMode | cmd->AddressSize |
+                                         cmd->AddressMode | cmd->InstructionModes | mode));
+
+        if (mode != QUADSPI_FMODE_MEMO)
+        {
+          /* Configure QSPI: AR register with address value */
+          REG_WRITE(pQspi->AR, cmd->Address);
+        }
+      }
+      else
+      {
+        /*---- Command with only data phase ----*/
+        if (cmd->DataMode != QSPI_DATA_NONE)
+        {
+          /* Configure QSPI: CCR register with all communications parameters */
+          REG_WRITE(pQspi->CCR, (cmd->DdrMode | cmd->DdrHoldHalfCycle | cmd->SIOOMode |
+                                           cmd->DataMode | (cmd->DummyCycles << QUADSPI_CCR_DCYC_Pos) |
+                                           cmd->AlternateByteMode | cmd->AddressMode |
+                                           cmd->InstructionModes | mode));
+        }
+      }
+    }
+  }
 }
 
 static void qspi_flash_reset(QUADSPI_TypeDef *pQspi)
 {
+    qspi_flash_cmd_t cmd;
     while (REG_READ_BIT(pQspi->SR, QUADSPI_SR_BUSY_Pos) != 0)
     {
         /* code */
     }
-    
+
+    /* Config command */
+    // cmd.InstructionModes = QUADSPI_INS_MODE_SING_LINE;      /* instruction mode 1 line */
+    // cmd.Instruction = RESET_ENABLE_CMD;                     /* instrcution command */
+    // cmd.AddressMode = QUADSPI_ADR_MODE_NONE;                /* address mode none */
+    // cmd.AlternateByteMode = QUADSPI_ALB_MODE_NONE;          /* alternate byte mode none */
+    // cmd.DummyCycles = 0;                                    /* dummy cycles  = 0 */
+    // cmd.DataMode = QUADSPI_DATA_MODE_NONE;                  /* data mode none */
+    // cmd.DdrMode = QUADSPI_DDRM_DISABLE;                     /* double data mode disable  */
+    // cmd.DdrHoldHalfCycle = QUADSPI_DHHC_ANALOG_DELAY;       /* using analog delay */
+    // cmd.SIOOMode = QUADSPI_SIOO_EVERY_TRANS;                /* every transaction  */
+    cmd.InstructionModes   = QSPI_INSTRUCTION_1_LINE;
+    cmd.Instruction       = RESET_ENABLE_CMD;
+    cmd.AddressMode       = QSPI_ADDRESS_NONE;
+    cmd.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+    cmd.DataMode          = QSPI_DATA_NONE;
+    cmd.DummyCycles       = 0;
+    cmd.DdrMode           = QSPI_DDR_MODE_DISABLE;
+    cmd.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
+    cmd.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
+
+    qspi_flash_cmd(pQspi, &cmd);
+
+    /* Send the reset memory command */
+    cmd.Instruction = RESET_MEMORY_CMD;
+    qspi_flash_cmd(pQspi, &cmd);
 }
 
 /******************************** End of file *********************************/

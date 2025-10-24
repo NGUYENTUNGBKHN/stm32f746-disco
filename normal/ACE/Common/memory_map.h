@@ -28,6 +28,10 @@ extern "C"
 
 #define ST_QSPI_CTRL_RES_ADDRESS    0xA0000000
 #define ST_QSPI_CTRL_RES_SIZE       0x00002000      /* 8KB */
+
+
+#define ST_NON_CACHE_ADDRESS    0x080C0000
+#define ST_NON_CACHE_SIZE       0x00040000      /* 8KB */
 /*   */
 
 

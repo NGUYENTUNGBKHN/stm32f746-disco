@@ -60,47 +60,6 @@ static void Error_Handler();
 static void MPU_Config();
 static void CPU_CACHE_Enable();
 
-/**
- * @brief  Fills buffer with user predefined data.
- * @param  pBuffer: pointer on the buffer to fill
- * @param  uwBufferLenght: size of the buffer to fill
- * @param  uwOffset: first value to fill on the buffer
- * @retval None
- */
-static void Fill_Buffer(uint8_t *pBuffer, uint32_t uwBufferLenght, uint32_t uwOffset)
-{
-    uint32_t tmpIndex = 0;
-
-    /* Put in global buffer different values */
-    for (tmpIndex = 0; tmpIndex < uwBufferLenght; tmpIndex++)
-    {
-        pBuffer[tmpIndex] = tmpIndex + uwOffset;
-    }
-}
-
-/**
- * @brief  Compares two buffers.
- * @param  pBuffer1, pBuffer2: buffers to be compared.
- * @param  BufferLength: buffer's length
- * @retval 1: pBuffer identical to pBuffer1
- *         0: pBuffer differs from pBuffer1
- */
-static uint8_t Buffercmp(uint8_t *pBuffer1, uint8_t *pBuffer2, uint32_t BufferLength)
-{
-    while (BufferLength--)
-    {
-        if (*pBuffer1 != *pBuffer2)
-        {
-            return 1;
-        }
-
-        pBuffer1++;
-        pBuffer2++;
-    }
-
-    return 0;
-}
-
 int main()
 {
     /* MPU Configuration */
@@ -112,10 +71,18 @@ int main()
     /* Clock configuration */
     SystemClock_Config();
     TRACE_INFO("Entered Application \n");
-
+    // Buffercmp(&a, &b, 1);
     /* Enter the ThreadX kernel.  */
-    tx_kernel_enter();
+    // tx_kernel_enter();
+    #if 1
+    qspi_flash_t *test = (qspi_flash_t*)qspi_flash_create();
 
+    test->init(test);
+    #else
+    w25q128j_t *test_2 = (w25q128j_t*)W25Q128J_Create();
+
+    test_2->init(test_2);
+    #endif 
     while (1) 
     {
         /* code */
@@ -216,6 +183,20 @@ static void MPU_Config()
 
     HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
+    /* Configure the memory non-cache */
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER3;
+    MPU_InitStruct.BaseAddress = ST_NON_CACHE_ADDRESS;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_256KB;
+    MPU_InitStruct.SubRegionDisable = 0x00;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
     /* Enables the MPU */
     HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
@@ -223,6 +204,19 @@ static void MPU_Config()
 
 static void CPU_CACHE_Enable()
 {
+    /* Clean cache */
+    SCB_CleanDCache();
+
+    SCB_CleanDCache();
+
+    SCB_InvalidateDCache();
+
+    SCB_InvalidateICache();
+
+    SCB_DisableDCache();
+
+    SCB_DisableICache();
+
     /* Enable I-Cache */
     SCB_EnableICache();
 

@@ -12,8 +12,9 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
   SRAM1    (xrw)    : ORIGIN = 0x20010000,   LENGTH = 240K
-  FLASH    (rx)    : ORIGIN = 0x08040000,   LENGTH = 256K     /* SECTOR 5 */
-  QSPI    (xrw)  : ORIGIN = 0x90000000, LENGTH = 16M
+  FLASH    (rx)     : ORIGIN = 0x08040000,   LENGTH = 512K     /* SECTOR 5 - 6 */
+  QSPI    (xrw)     : ORIGIN = 0x90000000,   LENGTH = 16M
+  FLASH_NOCACHE(rx) : ORIGIN = 0x080C0000,   LENGTH = 256K    /* SECTOR 7 */
 }
 
 /* Sections */
@@ -66,6 +67,14 @@ SECTIONS
     _qspi_end = .;         /* define a global symbols at end of qspi */
     
   } >QSPI
+
+  .nocache :
+  {
+    . = ALIGN(4);
+    *(.nocache)
+    *(.nocache*)
+    . = ALIGN(4);
+  } >FLASH_NOCACHE
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);

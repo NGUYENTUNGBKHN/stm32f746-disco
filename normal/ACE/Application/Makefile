@@ -51,6 +51,7 @@ SRC_INCLUDE+=$(wildcard *.c)
 SRC_INCLUDE+=$(wildcard *.s)
 SRC_INCLUDE+=$(wildcard *.S)
 SRC_INCLUDE+=$(wildcard $(MID_DIR)/w25q128j/*.c)
+SRC_INCLUDE+=$(wildcard $(MID_DIR)/qspi_flash/*.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Device/Src/*.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_cortex.c)
@@ -72,6 +73,7 @@ INC_FOLDERS=\
 	$(SDK_DIR)/Driver/hal\
 	$(SDK_DIR)/Driver/hal/Inc\
 	$(MID_DIR)/w25q128j\
+	$(MID_DIR)/qspi_flash\
 	$(OS_DIR)/common/inc\
 	$(OS_DIR)/ports/cortex_m7/gnu/inc\
 
@@ -103,7 +105,7 @@ help:
 # erase:
 # 	Jlink.exe -if swd -device nRF52840_xxAA -speed 4000 -CommanderScript CommanderScript/erase_windows.jlink
 flash: default
-	STM32_Programmer_CLI.exe -c port=SWD -w $(BUILD_DIR)/$(TARGET_NAME).bin 0x08000000 -v -rst
+	STM32_Programmer_CLI.exe -c port=SWD -w $(BUILD_DIR)/$(TARGET_NAME).bin 0x08040000 -v -rst
 
 erase: default
 	STM32_Programmer_CLI.exe -c port=SWD -e all
