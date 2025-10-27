@@ -41,6 +41,8 @@ extern "C"
 #define QUADSPI_CLK_pin         MCU_GPIO_PIN_2
 #define QUADSPI_BK1_NCS_port    GPIOB
 #define QUADSPI_BK1_NCS_pin     MCU_GPIO_PIN_6
+#define QUADSPI_BK1_IO0_port    GPIOD
+#define QUADSPI_BK1_IO0_pin     MCU_GPIO_PIN_11
 #define QUADSPI_BK1_IO1_port    GPIOD
 #define QUADSPI_BK1_IO1_pin     MCU_GPIO_PIN_12
 #define QUADSPI_BK1_IO2_port    GPIOE
@@ -101,6 +103,12 @@ extern "C"
 #define QUADSPI_SIOO_EVERY_TRANS         0
 #define QUADSPI_SIOO_FIRST_TRANS         1
 
+typedef struct QSPI_FLASH_MEMORY_MAPPED_S
+{
+    uint32_t TimeoutPeriod;
+    uint32_t TimeOutActivations;
+}qspi_flash_memory_mapped_t;
+
 typedef struct QSPI_FLASH_CMD_S
 {
     uint32_t Instruction;
@@ -119,6 +127,16 @@ typedef struct QSPI_FLASH_CMD_S
     uint32_t SIOOMode;
 }qspi_flash_cmd_t;
 
+typedef struct QSPI_FLASH_AUTO_POLLING_S
+{
+    uint32_t Match;
+    uint32_t Mask;
+    uint32_t Interval;
+    uint32_t StatusByteSize;
+    uint32_t MatchMode;
+    uint32_t AutomaticStop;
+}qspi_flash_autoPolling_t;
+
 typedef struct QSPI_FLASH_S qspi_flash_t;
 
 struct QSPI_FLASH_S
@@ -126,9 +144,9 @@ struct QSPI_FLASH_S
     /* data */
     QUADSPI_TypeDef *pQspi;
     void (*init)(qspi_flash_t *self);
-    void (*read)(qspi_flash_t *self, uint32_t address, uint8_t data, uint16_t size);
-    void (*write)(qspi_flash_t *self, uint32_t address, uint8_t data, uint16_t size);
-    void (*erase_chip)(qspi_flash_t *self);
+    void (*read)(qspi_flash_t *self, uint32_t address, uint8_t *data, uint16_t size);
+    void (*write)(qspi_flash_t *self, uint32_t address, uint8_t *data, uint16_t size);
+    void (*erase_chip)(qspi_flash_t *self, uint32_t BlockAddress);
     void (*memory_mapped)(qspi_flash_t *self);
 };
 

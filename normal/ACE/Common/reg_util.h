@@ -27,7 +27,7 @@ extern "C"
 /* Clear at bit position of reg */
 #define REG_CLR_BIT(reg, pos)               ((reg) &= ~(1 << (pos)))
 /* Read at bit postion of reg */
-#define REG_READ_BIT(reg, pos)              ((reg) & (1 << (pos)))
+#define REG_READ_BIT(reg, pos)              (((reg) & (1 << (pos))) >> pos)
 
 #define REG_CLR_VAL(reg, clrmask, pos)      ((reg) &= ~(clrmask << (pos)))
 
@@ -36,6 +36,7 @@ extern "C"
                                                 ((reg) |= ((val) << (pos)));\
                                             }while(0)
 
+#define REG_MODIFY(reg, clearmask, setmask) REG_WRITE((reg), (((REG_READ(reg)) & (~(clearmask))) | (setmask)))
 
 #ifdef __cplusplus
 }

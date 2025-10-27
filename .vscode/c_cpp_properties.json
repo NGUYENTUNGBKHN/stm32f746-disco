@@ -16,7 +16,7 @@
             "cStandard": "gnu99",
             "cppStandard": "gnu++98",
             "intelliSenseMode": "gcc-arm",
-            "compilerPath": "C:/gcc-arm-none-eabi/bin/arm-none-eabi-gcc.exe"
+            "compilerPath": "D:/Toolchain_2/bin/arm-none-eabi-gcc.exe"
         }
     ],
     "version": 4

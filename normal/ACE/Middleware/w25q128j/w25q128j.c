@@ -346,7 +346,7 @@ uint8_t W25Q128J_GetStatus(w25q128j_t *self)
     {
         return W25Q128J_ERROR;
     }
-
+    TRACE_INFO("reg w25 = %x \n", reg);
     /* Check the value of the register */
     if ((reg & W25Q128J_SR2_SUS) != 0)
     {
@@ -540,6 +540,7 @@ w25q128j_t *W25Q128J_Create()
     w25_qspi->init = W25Q128J_Init;
     w25_qspi->write = W25Q128J_Write;
     w25_qspi->read = W25Q128J_Read;
+    w25_qspi->get_status = W25Q128J_GetStatus;
     w25_qspi->erase_block = W25Q128J_Erase_Block;
     w25_qspi->mapped_memory = W25Q128J_EnableMemoryMappedMode;
 

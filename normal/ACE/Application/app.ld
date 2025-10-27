@@ -59,13 +59,7 @@ SECTIONS
   
   .qspi :
   {
-    . = ALIGN(4);
-    _qspi_start = .;        /* create a global symbol at qspi start */
-    *(.qspi)         /* .qspi sections */
-    *(.qspi*)        /* .qspi* sections */
-    . = ALIGN(4);
-    _qspi_end = .;         /* define a global symbols at end of qspi */
-    
+    KEEP(*(.qspi))         /* .qspi sections */
   } >QSPI
 
   .nocache :

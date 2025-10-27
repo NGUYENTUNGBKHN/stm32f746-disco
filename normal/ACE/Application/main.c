@@ -18,7 +18,7 @@
 **                       INTERNAL MACRO DEFINITIONS
 *******************************************************************************/
 #define BUFFER_SIZE         ((uint32_t)0x0200)
-#define WRITE_READ_ADDR     ((uint32_t)0x0050)
+#define WRITE_READ_ADDR     ((uint32_t)0x0000)
 
 #define DEMO_STACK_SIZE         1024
 #define DEMO_BYTE_POOL_SIZE     9120
@@ -60,8 +60,39 @@ static void Error_Handler();
 static void MPU_Config();
 static void CPU_CACHE_Enable();
 
+// __attribute__((section(".qspi")))
+// const uint32_t image1[2] = {0x12345678, 0x87654321};
+// void test(void);
+
+void led_init()
+{
+    GPIO_InitTypeDef gpio_init_structure;
+
+    __HAL_RCC_GPIOI_CLK_ENABLE();
+    /* Configure the GPIO_LED pin */
+    gpio_init_structure.Pin = GPIO_PIN_1;
+    gpio_init_structure.Mode = GPIO_MODE_OUTPUT_PP;
+    gpio_init_structure.Pull = GPIO_PULLUP;
+    gpio_init_structure.Speed = GPIO_SPEED_HIGH;
+
+    HAL_GPIO_Init(GPIOI, &gpio_init_structure);
+}
+
+void toggle_led()
+{
+    HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
+}
+
+void __attribute__((section(".qspi"), noinline)) abc(void)
+{
+    toggle_led();
+    // TRACE_INFO("a = %d\n",(unsigned int)a);
+}
+
 int main()
 {
+    uint8_t data_send = 0x12;
+    uint8_t data_recv = 0x00;
     /* MPU Configuration */
     MPU_Config();
     /* CPU cache Enable */
@@ -70,24 +101,51 @@ int main()
     HAL_Init();
     /* Clock configuration */
     SystemClock_Config();
+
+    led_init();
     TRACE_INFO("Entered Application \n");
     // Buffercmp(&a, &b, 1);
     /* Enter the ThreadX kernel.  */
     // tx_kernel_enter();
     #if 1
+    
     qspi_flash_t *test = (qspi_flash_t*)qspi_flash_create();
 
     test->init(test);
+    // test->erase_chip(test, WRITE_READ_ADDR);
+    // test->write(test, WRITE_READ_ADDR, &data_send, 1);
+    // test->read(test, WRITE_READ_ADDR, &data_recv, 1);
+    // TRACE_INFO("data_recv = %x \n", data_recv);
+    test->memory_mapped(test);
+
+    // uint8_t byte0 = *(__IO uint8_t *)(ST_QSPI_MAPPING_ADDRESS);
+    // TRACE_INFO(" byte = %x\n", (unsigned int)byte0);
     #else
+    // uint8_t res = 0xff;
     w25q128j_t *test_2 = (w25q128j_t*)W25Q128J_Create();
 
     test_2->init(test_2);
+    // test_2->erase_block(test_2, WRITE_READ_ADDR);
+    // test_2->write(test_2, &data_send, WRITE_READ_ADDR, 1);
+    // test_2->read(test_2, &data_recv, WRITE_READ_ADDR, 1);
+    // TRACE_INFO("data_recv = %x\n", data_recv);
+    test_2->mapped_memory(test_2);
+
+    uint8_t byte0 = *(__IO uint8_t *)(ST_QSPI_MAPPING_ADDRESS);
+    TRACE_INFO(" byte = %x\n", (unsigned int)byte0);
+    byte0++;
+    // TRACE_INFO("image1 address = 0x%08x -> %x \n", (unsigned int)image1, (unsigned int)image1[0]);
+
+    
+    // test_led();
     #endif 
+    
     while (1) 
     {
         /* code */
         // test_led();
-
+        abc();
+        HAL_Delay(500);
     }
 }
 
@@ -132,73 +190,57 @@ static void SystemClock_Config()
 
 static void MPU_Config()
 {
-    MPU_Region_InitTypeDef MPU_InitStruct = {0};
+    MPU_Region_InitTypeDef MPU_InitStruct;
 
-    /* Disables the MPU */
+    /* Disable the MPU */
     HAL_MPU_Disable();
 
-    /** Initializes and configures the Region and the memory to be protected
-     */
+    /* Configure the MPU as Strongly ordered for not defined regions */
     MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-    MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-    MPU_InitStruct.BaseAddress = ST_MEMORY_START_ADDRESS;
+    MPU_InitStruct.BaseAddress = 0x00;
     MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
-    MPU_InitStruct.SubRegionDisable = 0x87;
-    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
     MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
-    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
     MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.SubRegionDisable = 0x87;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
 
     HAL_MPU_ConfigRegion(&MPU_InitStruct);
-    
+
     /* Configure the MPU QSPI flash */
     MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-    MPU_InitStruct.Number = MPU_REGION_NUMBER1;
-    MPU_InitStruct.BaseAddress = ST_QSPI_MAPPING_ADDRESS;
+    MPU_InitStruct.BaseAddress = 0x90000000;
     MPU_InitStruct.Size = MPU_REGION_SIZE_16MB;
-    MPU_InitStruct.SubRegionDisable = 0x00;
-    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
     MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-    MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
     MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
-    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
-
-    HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-    /* Configure the MPU QSPI control registers */
-    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-    MPU_InitStruct.Number = MPU_REGION_NUMBER2;
-    MPU_InitStruct.BaseAddress = ST_QSPI_CTRL_RES_ADDRESS;
-    MPU_InitStruct.Size = MPU_REGION_SIZE_8KB;
-    MPU_InitStruct.SubRegionDisable = 0x00;
-    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-    MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
-
-    HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-    /* Configure the memory non-cache */
-    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-    MPU_InitStruct.Number = MPU_REGION_NUMBER3;
-    MPU_InitStruct.BaseAddress = ST_NON_CACHE_ADDRESS;
-    MPU_InitStruct.Size = MPU_REGION_SIZE_256KB;
-    MPU_InitStruct.SubRegionDisable = 0x00;
-    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
     MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER1;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.SubRegionDisable = 0x0;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
 
     HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
-    /* Enables the MPU */
+    /* Configure the MPU attributes QSPI control registers */
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.BaseAddress = 0xA0000000;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_8KB;
+    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER2;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.SubRegionDisable = 0x0;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+    /* Enable the MPU */
     HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 }
 
