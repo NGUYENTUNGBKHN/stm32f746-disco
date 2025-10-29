@@ -9,6 +9,8 @@ MAKE_COMMON:=./../Common
 
 # This is the root project directory and the core directory
 ROOT_PROJ:=./
+
+EXT_FLASH_DIR:=$(ROOT_PROJ)/../external_flash
 # Core directory for the project
 # CORE_DIR:=$(ROOT_PROJ)/../Core/board
 # CMSIS_DIR:=$(ROOT_PROJ)/../Core/cmsis/inc
@@ -50,7 +52,7 @@ SRC_EXCLUDE=\
 SRC_INCLUDE+=$(wildcard *.c)
 SRC_INCLUDE+=$(wildcard *.s)
 SRC_INCLUDE+=$(wildcard *.S)
-SRC_INCLUDE+=$(wildcard $(MID_DIR)/w25q128j/*.c)
+SRC_INCLUDE+=$(wildcard $(MID_DIR)/qspi_flash/w25q128j/*.c)
 SRC_INCLUDE+=$(wildcard $(MID_DIR)/qspi_flash/*.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Device/Src/*.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal.c)
@@ -72,7 +74,7 @@ INC_FOLDERS=\
 	$(SDK_DIR)/Device/Include\
 	$(SDK_DIR)/Driver/hal\
 	$(SDK_DIR)/Driver/hal/Inc\
-	$(MID_DIR)/w25q128j\
+	$(MID_DIR)/qspi_flash/w25q128j\
 	$(MID_DIR)/qspi_flash\
 	$(OS_DIR)/common/inc\
 	$(OS_DIR)/ports/cortex_m7/gnu/inc\
@@ -104,8 +106,11 @@ help:
 # # Erase target
 # erase:
 # 	Jlink.exe -if swd -device nRF52840_xxAA -speed 4000 -CommanderScript CommanderScript/erase_windows.jlink
-flash: default
+flash_bin: default
 	STM32_Programmer_CLI.exe -c port=SWD -w $(BUILD_DIR)/$(TARGET_NAME).bin 0x08040000 -v -rst
+
+flash_hex: default
+	STM32_Programmer_CLI.exe -c port=SWD -el $(EXT_FLASH_DIR)/W25Q128JVEIQ_STM32F746G-DISCO.stldr -w $(BUILD_DIR)/$(TARGET_NAME).hex 0x90000000 -v -hardRst
 
 erase: default
 	STM32_Programmer_CLI.exe -c port=SWD -e all

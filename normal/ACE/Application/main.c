@@ -78,15 +78,9 @@ void led_init()
     HAL_GPIO_Init(GPIOI, &gpio_init_structure);
 }
 
-void toggle_led()
+void __attribute__((section(".qspi"), noinline)) toggle_led(void)
 {
     HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
-}
-
-void __attribute__((section(".qspi"), noinline)) abc(void)
-{
-    toggle_led();
-    // TRACE_INFO("a = %d\n",(unsigned int)a);
 }
 
 int main()
@@ -104,47 +98,18 @@ int main()
 
     led_init();
     TRACE_INFO("Entered Application \n");
+
+    qspi_flash_init();
+    qspi_flash_xip_en();
     // Buffercmp(&a, &b, 1);
     /* Enter the ThreadX kernel.  */
     // tx_kernel_enter();
-    #if 1
-    
-    qspi_flash_t *test = (qspi_flash_t*)qspi_flash_create();
 
-    test->init(test);
-    // test->erase_chip(test, WRITE_READ_ADDR);
-    // test->write(test, WRITE_READ_ADDR, &data_send, 1);
-    // test->read(test, WRITE_READ_ADDR, &data_recv, 1);
-    // TRACE_INFO("data_recv = %x \n", data_recv);
-    test->memory_mapped(test);
 
-    // uint8_t byte0 = *(__IO uint8_t *)(ST_QSPI_MAPPING_ADDRESS);
-    // TRACE_INFO(" byte = %x\n", (unsigned int)byte0);
-    #else
-    // uint8_t res = 0xff;
-    w25q128j_t *test_2 = (w25q128j_t*)W25Q128J_Create();
-
-    test_2->init(test_2);
-    // test_2->erase_block(test_2, WRITE_READ_ADDR);
-    // test_2->write(test_2, &data_send, WRITE_READ_ADDR, 1);
-    // test_2->read(test_2, &data_recv, WRITE_READ_ADDR, 1);
-    // TRACE_INFO("data_recv = %x\n", data_recv);
-    test_2->mapped_memory(test_2);
-
-    uint8_t byte0 = *(__IO uint8_t *)(ST_QSPI_MAPPING_ADDRESS);
-    TRACE_INFO(" byte = %x\n", (unsigned int)byte0);
-    byte0++;
-    // TRACE_INFO("image1 address = 0x%08x -> %x \n", (unsigned int)image1, (unsigned int)image1[0]);
-
-    
-    // test_led();
-    #endif 
-    
     while (1) 
     {
         /* code */
-        // test_led();
-        abc();
+        toggle_led();
         HAL_Delay(500);
     }
 }

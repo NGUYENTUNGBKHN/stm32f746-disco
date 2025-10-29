@@ -50,7 +50,6 @@ SRC_EXCLUDE=\
 
 SRC_INCLUDE+=$(wildcard *.c)
 SRC_INCLUDE+=$(wildcard $(BOOT_DIR)/*.c)
-SRC_INCLUDE+=$(wildcard $(MID_DIR)/w25q128j/*.c)
 SRC_INCLUDE+=$(wildcard $(BOOT_DIR)/operation/*.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Device/Src/*.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal.c)
@@ -75,7 +74,6 @@ INC_FOLDERS=\
 	$(SDK_DIR)/Driver/hal/Inc\
 	$(BOOT_DIR)\
 	$(BOOT_DIR)/operation\
-	$(MID_DIR)/w25q128j\
 
 LIBS+=$(SDK_DIR)/_build/stm32_lib.a
 # LIBS+=-lc -lm
