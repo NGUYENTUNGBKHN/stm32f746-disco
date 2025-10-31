@@ -85,8 +85,6 @@ void __attribute__((section(".qspi"), noinline)) toggle_led(void)
 
 int main()
 {
-    uint8_t data_send = 0x12;
-    uint8_t data_recv = 0x00;
     /* MPU Configuration */
     MPU_Config();
     /* CPU cache Enable */

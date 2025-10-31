@@ -74,7 +74,7 @@ drv_qspi_flash_t *w25q128j_Create()
         }
         m_w25q128j_qspi->state = DRV_QSPI_STATE_NONE;
         m_w25q128j_qspi->init = w25q128j_init;
-        m_w25q128j_qspi->status = w25q128j_status;
+        m_w25q128j_qspi->get_status = w25q128j_status;
         m_w25q128j_qspi->reset = w25q128j_reset;
         m_w25q128j_qspi->read = w25q128j_read;
         m_w25q128j_qspi->write = w25q128j_write;
@@ -147,7 +147,7 @@ static QSPI_RESULT w25q128j_status(drv_qspi_flash_t *self)
     {
         return QSPI_RESULT_FAIL;
     }
-    TRACE_INFO("reg1 = %x reg2 = %x reg3 = %x\n", reg1, reg2, reg3);
+    // TRACE_INFO("reg1 = %x reg2 = %x reg3 = %x\n", reg1, reg2, reg3);
     return QSPI_RESULT_OK;
 }
 
@@ -503,8 +503,8 @@ static void w25q128j_init_hw_pin()
 
     // /*##-3- Configure the NVIC for QSPI #########################################*/
     // /* NVIC configuration for QSPI interrupt */
-    // HAL_NVIC_SetPriority(QUADSPI_IRQn, 0x0F, 0);
-    // HAL_NVIC_EnableIRQ(QUADSPI_IRQn);
+    HAL_NVIC_SetPriority(QUADSPI_IRQn, 0x0F, 0);
+    HAL_NVIC_EnableIRQ(QUADSPI_IRQn);
 #endif 
 }
 
