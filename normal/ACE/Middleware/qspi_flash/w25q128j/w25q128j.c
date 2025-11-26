@@ -24,20 +24,29 @@
 /*******************************************************************************
 **                      COMMON VARIABLE DEFINITIONS
 *******************************************************************************/
-
-
+extern void DMA2_Stream7_IRQHandler(void);
+extern void QuadSPI_IRQHandler(void);
 /*******************************************************************************
 **                      INTERNAL VARIABLE DEFINITIONS
 *******************************************************************************/
 static drv_qspi_flash_t *m_w25q128j_qspi;
 static QSPI_HandleTypeDef m_qspi_handle;
-
+static DMA_HandleTypeDef     DmaHandle;
 /*******************************************************************************
 **                      INTERNAL FUNCTION PROTOTYPES
 *******************************************************************************/
 
-static QSPI_RESULT w25q128j_init(drv_qspi_flash_t *self);
+
+
+static QSPI_RESULT w25q128j_init(drv_qspi_flash_t *self, uint8_t mode_tranfer);
 static uint32_t w25q128j_init_hw();
+
+/* w25q128j  */
+static HAL_StatusTypeDef w25q128j_command(QSPI_CommandTypeDef *cmd, uint32_t timeout);
+static HAL_StatusTypeDef w25q128j_transmit(uint8_t *data, uint32_t timeout);
+static HAL_StatusTypeDef w25q128j_received(uint8_t *data, uint32_t timeout);
+static HAL_StatusTypeDef w25q128j_autoPolling(QSPI_CommandTypeDef *cmd, QSPI_AutoPollingTypeDef *cfg, uint32_t timeout);
+/*  */
 
 static QSPI_RESULT w25q128j_status(drv_qspi_flash_t *self);
 
@@ -52,6 +61,7 @@ static QSPI_RESULT w25q128j_erase_block(drv_qspi_flash_t *self, uint32_t address
 static QSPI_RESULT w25q128j_erase_chip(drv_qspi_flash_t *self);
 
 static QSPI_RESULT w25q128j_memoryMapped_active(drv_qspi_flash_t *self);
+
 #if defined(BARE_METAL)
 #else
 static QSPI_RESULT w25q128j_WriteEnable();
@@ -85,11 +95,12 @@ drv_qspi_flash_t *w25q128j_Create()
     return m_w25q128j_qspi;
 }
 
-static QSPI_RESULT w25q128j_init(drv_qspi_flash_t *self)
+static QSPI_RESULT w25q128j_init(drv_qspi_flash_t *self, uint8_t mode_tranfer)
 {
     self->state = DRV_QSPI_STATE_INIT;
     w25q128j_init_hw();
     self->state = DRV_QSPI_STATE_IDLE;
+    self->mode_tranfer = mode_tranfer;
     return QSPI_RESULT_OK;
 }
 
@@ -111,39 +122,39 @@ static QSPI_RESULT w25q128j_status(drv_qspi_flash_t *self)
     s_command.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
 
     /* Configure the command */
-    if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
 
     /* Reception of the data */
-    if (HAL_QSPI_Receive(&m_qspi_handle, &reg1, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_received(&reg1, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
 
     s_command.Instruction = READ_STATUS_REG_2_CMD;
     /* Configure the command */
-    if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
 
     /* Reception of the data */
-    if (HAL_QSPI_Receive(&m_qspi_handle, &reg2, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_received(&reg2, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
 
     s_command.Instruction = READ_STATUS_REG_3_CMD;
     /* Configure the command */
-    if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
 
     /* Reception of the data */
-    if (HAL_QSPI_Receive(&m_qspi_handle, &reg3, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_received(&reg3, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
@@ -167,7 +178,7 @@ static QSPI_RESULT w25q128j_reset(drv_qspi_flash_t *self)
     s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
 
     /* Send the command */
-    if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         // ERROR("CMD Enable fail.\n");
         return QSPI_RESULT_FAIL;
@@ -175,7 +186,7 @@ static QSPI_RESULT w25q128j_reset(drv_qspi_flash_t *self)
 
     /* Send the reset memory command */
     s_command.Instruction = RESET_MEMORY_CMD;
-    if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         // ERROR("Reset Memory fail.\n");
         return QSPI_RESULT_FAIL;
@@ -212,7 +223,7 @@ static QSPI_RESULT w25q128j_read(drv_qspi_flash_t *self, uint32_t address, uint8
         s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
         
         /* Configure the command */
-        if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+        if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
         {
             return QSPI_RESULT_TIMEOUT;
         }
@@ -221,7 +232,7 @@ static QSPI_RESULT w25q128j_read(drv_qspi_flash_t *self, uint32_t address, uint8
         MODIFY_REG(m_qspi_handle.Instance->DCR, QUADSPI_DCR_CSHT, QSPI_CS_HIGH_TIME_3_CYCLE);
         
         /* Reception of the data */
-        if (HAL_QSPI_Receive(&m_qspi_handle, data, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+        if (w25q128j_received(data, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
         {
             return QSPI_RESULT_TIMEOUT;
         }
@@ -279,13 +290,13 @@ static QSPI_RESULT w25q128j_write(drv_qspi_flash_t *self, uint32_t address, uint
             }
             
             /* Configure the command */
-            if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+            if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
             {
                 return QSPI_RESULT_FAIL;
             }
             
             /* Transmission of the data */
-            if (HAL_QSPI_Transmit(&m_qspi_handle, data, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+            if (w25q128j_transmit(data, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
             {
                 return QSPI_RESULT_FAIL;
             }
@@ -332,7 +343,7 @@ static QSPI_RESULT w25q128j_erase_block(drv_qspi_flash_t *self, uint32_t address
     }
 
     /* Send the command */
-    if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
@@ -368,7 +379,7 @@ static QSPI_RESULT w25q128j_erase_chip(drv_qspi_flash_t *self)
     }
 
     /* Send the command */
-    if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
@@ -465,6 +476,8 @@ static void w25q128j_init_hw_pin()
     __HAL_RCC_QSPI_RELEASE_RESET();
     /* Enable GPIO clocks */
     W25Q128J_GPIO_CLK_ENABLE;
+    /* DMA2 clock enable */
+    __HAL_RCC_DMA2_CLK_ENABLE();
 
     /*##-2- Configure peripheral GPIO ##########################################*/
     /* QSPI CS GPIO pin configuration  */
@@ -555,11 +568,38 @@ static uint32_t w25q128j_init_hw()
     m_qspi_handle.Init.ClockMode = QSPI_CLOCK_MODE_0;
     m_qspi_handle.Init.FlashID = QSPI_FLASH_ID_1;
     m_qspi_handle.Init.DualFlash = QSPI_DUALFLASH_DISABLE;
+    
+
+    m_qspi_handle.hdma->Init.Channel = DMA_CHANNEL_3;                           /* DMA_CHANNEL_0                    */
+    // m_qspi_handle.hdma->Init.Direction = DMA_MEMORY_TO_MEMORY;                /* M2M transfer mode                */
+    // m_qspi_handle.hdma->Init.PeriphInc = DMA_PINC_ENABLE;                     /* Peripheral increment mode Enable */
+    // m_qspi_handle.hdma->Init.MemInc = DMA_MINC_ENABLE;                        /* Memory increment mode Enable     */
+    m_qspi_handle.hdma->Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;       /* Peripheral data alignment : Word */
+    m_qspi_handle.hdma->Init.MemDataAlignment = DMA_MDATAALIGN_WORD;          /* memory data alignment : Word     */
+    m_qspi_handle.hdma->Init.Mode = DMA_NORMAL;                               /* Normal DMA mode                  */
+    m_qspi_handle.hdma->Init.Priority = DMA_PRIORITY_HIGH;                    /* priority level : high            */
+    m_qspi_handle.hdma->Init.FIFOMode = DMA_FIFOMODE_ENABLE;                  /* FIFO mode enabled                */
+    m_qspi_handle.hdma->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL; /* FIFO threshold: 1/4 full   */
+    m_qspi_handle.hdma->Init.MemBurst = DMA_MBURST_SINGLE;                    /* Memory burst                     */
+    m_qspi_handle.hdma->Init.PeriphBurst = DMA_PBURST_SINGLE;                 /* Peripheral burst                 */
+
+    m_qspi_handle.hdma->Instance = DMA2_Stream0;
+
+    if (HAL_DMA_Init(m_qspi_handle.hdma) != HAL_OK)
+    {
+        /* Initialization Error */
+
+    }
 
     if (HAL_QSPI_Init(&m_qspi_handle) != HAL_OK)
     {
         // ERROR("QSPI init fail.\n");
         return QSPI_RESULT_FAIL;
+    }
+
+    if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_DMA)
+    {
+        // w25q128j_DMA_Init();
     }
     return QSPI_RESULT_OK;
 #endif
@@ -629,7 +669,7 @@ static QSPI_RESULT w25q128j_WriteEnable()
     s_command.DdrHoldHalfCycle = QSPI_DDR_HHC_ANALOG_DELAY;
     s_command.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
 
-    if (HAL_QSPI_Command(&m_qspi_handle, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_command(&s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
@@ -646,7 +686,7 @@ static QSPI_RESULT w25q128j_WriteEnable()
     s_command.Instruction = READ_STATUS_REG_CMD;
     s_command.DataMode = QSPI_DATA_1_LINE;
 
-    if (HAL_QSPI_AutoPolling(&m_qspi_handle, &s_command, &s_config, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+    if (w25q128j_autoPolling(&s_command, &s_config, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
@@ -677,7 +717,7 @@ static QSPI_RESULT w25q128j_AutoPollingMemReady(uint32_t timeout)
     s_config.Interval        = 0x10;
     s_config.AutomaticStop   = QSPI_AUTOMATIC_STOP_ENABLE;
 
-    if (HAL_QSPI_AutoPolling(&m_qspi_handle, &s_command, &s_config, timeout) != HAL_OK)
+    if (w25q128j_autoPolling(&s_command, &s_config, timeout) != HAL_OK)
     {
         return QSPI_RESULT_FAIL;
     }
@@ -685,6 +725,91 @@ static QSPI_RESULT w25q128j_AutoPollingMemReady(uint32_t timeout)
     return QSPI_RESULT_OK;
 }
 #endif 
+
+static HAL_StatusTypeDef w25q128j_command(QSPI_CommandTypeDef *cmd, uint32_t timeout)
+{
+    HAL_StatusTypeDef result = HAL_OK;
+    if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_POLLING)
+    {
+        result = HAL_QSPI_Command(&m_qspi_handle, cmd, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    }
+    else if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_IT)
+    {
+        result = HAL_QSPI_Command_IT(&m_qspi_handle, cmd);
+    }
+    else if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_DMA)
+    {
+        result = HAL_QSPI_Command_IT(&m_qspi_handle, cmd);
+    }
+    return result;
+    
+}
+
+static HAL_StatusTypeDef w25q128j_transmit(uint8_t *data, uint32_t timeout)
+{
+    HAL_StatusTypeDef result = HAL_OK;
+    if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_POLLING)
+    {
+        result = HAL_QSPI_Transmit(&m_qspi_handle, data, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    }
+    else if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_IT)
+    {
+        result = HAL_QSPI_Transmit_IT(&m_qspi_handle, data);
+    }
+    else if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_DMA)
+    {
+        result = HAL_QSPI_Transmit_DMA(&m_qspi_handle, data);
+    }
+    return result;
+}
+
+static HAL_StatusTypeDef w25q128j_received(uint8_t *data, uint32_t timeout)
+{
+    HAL_StatusTypeDef result = HAL_OK;
+    if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_POLLING)
+    {
+        result = HAL_QSPI_Receive(&m_qspi_handle, data, HAL_QPSI_TIMEOUT_DEFAULT_VALUE);
+    }
+    else if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_IT)
+    {
+        result = HAL_QSPI_Receive_IT(&m_qspi_handle, data);
+    }
+    else if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_DMA)
+    {
+        result = HAL_QSPI_Receive_DMA(&m_qspi_handle, data);
+    }
+    return result;
+}
+
+static HAL_StatusTypeDef w25q128j_autoPolling(QSPI_CommandTypeDef *cmd, QSPI_AutoPollingTypeDef *cfg, uint32_t timeout)
+{
+    HAL_StatusTypeDef result = HAL_OK;
+    if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_POLLING)
+    {
+        result = HAL_QSPI_AutoPolling(&m_qspi_handle, cmd, cfg, timeout);
+    }
+    else if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_IT)
+    {
+        result = HAL_QSPI_AutoPolling_IT(&m_qspi_handle, cmd, cfg);
+    }
+    else if (m_w25q128j_qspi->mode_tranfer == DRV_QSPI_DMA)
+    {
+        result = HAL_QSPI_AutoPolling_IT(&m_qspi_handle, cmd, cfg);
+    }
+    return result;
+}
+
+void QuadSPI_IRQHandler(void)
+{
+    HAL_QSPI_IRQHandler(&m_qspi_handle);
+}
+
+void DMA2_Stream7_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(m_qspi_handle.hdma);
+}
+
+
 /******************************** End of file *********************************/
 
 

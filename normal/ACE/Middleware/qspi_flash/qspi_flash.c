@@ -46,7 +46,7 @@ QSPI_RESULT qspi_flash_init()
         return QSPI_RESULT_FAIL;
     }
 
-    if (m_qspi_flash->init(m_qspi_flash) != QSPI_RESULT_OK)
+    if (m_qspi_flash->init(m_qspi_flash, DRV_QSPI_DMA) != QSPI_RESULT_OK)
     {
         return QSPI_RESULT_FAIL;
     }

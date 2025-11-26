@@ -24,6 +24,8 @@
 #define DEMO_BYTE_POOL_SIZE     9120
 #define DEMO_BLOCK_POOL_SIZE    100
 #define DEMO_QUEUE_SIZE         100
+
+#define SDRAM_TEST 0xC0000000
 /*******************************************************************************
 **                      COMMON VARIABLE DEFINITIONS
 *******************************************************************************/
@@ -102,7 +104,7 @@ int main()
     // Buffercmp(&a, &b, 1);
     /* Enter the ThreadX kernel.  */
     // tx_kernel_enter();
-
+    *(volatile uint32_t*)(SDRAM_TEST) = 0x12;
 
     while (1) 
     {

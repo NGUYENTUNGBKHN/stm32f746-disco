@@ -36,11 +36,19 @@ typedef enum
     DRV_QSPI_STATE_ERASE
 }drv_qspi_state;
 
+enum
+{
+    DRV_QSPI_POLLING,
+    DRV_QSPI_IT,
+    DRV_QSPI_DMA
+};
+
 typedef struct DRV_QSPI_FLASH_S drv_qspi_flash_t;
 struct DRV_QSPI_FLASH_S
 {
     uint8_t state;
-    QSPI_RESULT (*init)(drv_qspi_flash_t *self);
+    uint8_t mode_tranfer;
+    QSPI_RESULT (*init)(drv_qspi_flash_t *self, uint8_t mode_tranfer);
     QSPI_RESULT (*get_status)(drv_qspi_flash_t *self);
     QSPI_RESULT (*reset)(drv_qspi_flash_t *self);
     QSPI_RESULT (*erase_chip)(drv_qspi_flash_t *self);

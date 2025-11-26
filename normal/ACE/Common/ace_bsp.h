@@ -68,6 +68,8 @@ extern "C"
 #define W25Q128J_GPIO_D3_PIN        GPIO_PIN_13
 #define W25Q128J_GPIO_D3_PIN_pos    MCU_GPIO_PIN_13
 
+/* QSPI DMA */
+#define W25Q128J_QSPI_CHANNEL       DMA_CHANNEL_3
 
 #ifdef __cplusplus
 }
