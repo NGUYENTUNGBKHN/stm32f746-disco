@@ -15,6 +15,7 @@ MEMORY
   FLASH    (rx)     : ORIGIN = 0x08040000,   LENGTH = 512K     /* SECTOR 5 - 6 */
   QSPI    (xrw)     : ORIGIN = 0x90000000,   LENGTH = 16M
   FLASH_NOCACHE(rx) : ORIGIN = 0x080C0000,   LENGTH = 256K    /* SECTOR 7 */
+  EXT_RAM (rx)      : ORIGIN = 0xC0000000,   LENGTH = 32M
 }
 
 /* Sections */
@@ -114,6 +115,11 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >SRAM1
+
+  .ext_ram (NOLOAD):  
+  { 
+    *(.ext_ram)
+  } >EXT_RAM
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
   __RAM_segment_used_end__ = .;

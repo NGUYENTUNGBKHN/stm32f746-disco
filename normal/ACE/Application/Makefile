@@ -54,6 +54,8 @@ SRC_INCLUDE+=$(wildcard *.s)
 SRC_INCLUDE+=$(wildcard *.S)
 SRC_INCLUDE+=$(wildcard $(MID_DIR)/qspi_flash/w25q128j/*.c)
 SRC_INCLUDE+=$(wildcard $(MID_DIR)/qspi_flash/*.c)
+SRC_INCLUDE+=$(wildcard $(MID_DIR)/sdram/*.c)
+SRC_INCLUDE+=$(wildcard $(ROOT_PROJ)/jzip/*.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Device/Src/*.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal.c)
 # SRC_INCLUDE+=$(wildcard $(SDK_DIR)/Driver/hal/Src/stm32f7xx_hal_cortex.c)
@@ -76,8 +78,10 @@ INC_FOLDERS=\
 	$(SDK_DIR)/Driver/hal/Inc\
 	$(MID_DIR)/qspi_flash/w25q128j\
 	$(MID_DIR)/qspi_flash\
+	$(MID_DIR)/sdram\
 	$(OS_DIR)/common/inc\
 	$(OS_DIR)/ports/cortex_m7/gnu/inc\
+	$(ROOT_PROJ)/jzip\
 
 LIBS+=$(SDK_DIR)/_build/stm32_lib.a
 LIBS+=$(OS_DIR)/_build/tx_m7.a

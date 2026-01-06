@@ -14,6 +14,8 @@
 *******************************************************************************/
 #include "main.h"
 #include "tx_api.h"
+#include "jzip.h"
+#include "stm32f429i_discovery_sdram.h"
 /*******************************************************************************
 **                       INTERNAL MACRO DEFINITIONS
 *******************************************************************************/
@@ -80,13 +82,25 @@ void led_init()
     HAL_GPIO_Init(GPIOI, &gpio_init_structure);
 }
 
-void __attribute__((section(".qspi"), noinline)) toggle_led(void)
+__attribute__((section(".ext_ram")))
+uint32_t sdram_test = 0x01;
+
+// void __attribute__((section(".qspi"), noinline)) toggle_led(void)
+// {
+//     HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
+// }
+
+void toggle_led(void)
 {
     HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
 }
 
 int main()
 {
+    int res = 0;
+    uint8_t test_in[10] = {0x63, 0x64, 0x62, 0x66, 0x61, 0x65, 0x63, 0x63, 0x07, 0x00};
+    uint8_t test_out[8];
+    unsigned int outlen = 8;
     /* MPU Configuration */
     MPU_Config();
     /* CPU cache Enable */
@@ -95,16 +109,33 @@ int main()
     HAL_Init();
     /* Clock configuration */
     SystemClock_Config();
+    /* sdram */
+    BSP_SDRAM_Init();
 
     led_init();
     TRACE_INFO("Entered Application \n");
 
-    qspi_flash_init();
-    qspi_flash_xip_en();
+    // qspi_flash_init();
+    // qspi_flash_xip_en();
     // Buffercmp(&a, &b, 1);
     /* Enter the ThreadX kernel.  */
     // tx_kernel_enter();
-    *(volatile uint32_t*)(SDRAM_TEST) = 0x12;
+    // SCB_DisableDCache();
+
+    BSP_SDRAM_WriteData(SDRAM_TEST, test_in, 10);
+
+    res = jzip_uncompress(&test_out, &outlen, &test_in, 10);
+	if (res != JZIP_OK)
+    {
+        TRACE_INFO("uncompressed error %x \n", res);
+    }
+
+    TRACE_INFO("test out : ");
+    for (int i = 0; i < 8; i++)
+    {
+        TRACE_INFO("%x ", test_out[i]);
+    }
+    TRACE_INFO("\n");
 
     while (1) 
     {
@@ -218,6 +249,36 @@ static void MPU_Config()
     MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
     MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
     MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
+
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+    /* Configure the MPU attributes as WT for SDRAM */
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.BaseAddress = 0xC0000000;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_32MB;
+    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER4;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.SubRegionDisable = 0x00;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+    /* Configure the MPU attributes FMC control registers */
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.BaseAddress = 0xA0000000;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_8KB;
+    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER5;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.SubRegionDisable = 0x0;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
 
     HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
