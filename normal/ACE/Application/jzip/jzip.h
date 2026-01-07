@@ -23,6 +23,7 @@ extern "C"
  */
 typedef enum {
 	JZIP_OK         = 0,  /**< Success */
+    JZIP_INVALID    = -1, /**< paramter invalid */
 	JZIP_DATA_ERROR = -3, /**< Input error */
 	JZIP_BUF_ERROR  = -5  /**< Not enough room for output */
 } jzip_error_code;
