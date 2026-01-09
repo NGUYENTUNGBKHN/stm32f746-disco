@@ -16,6 +16,10 @@ extern "C"
 {
 #endif
 
+#define JZIP_NEED_INPUT     1
+#define JZIP_NEED_OUTPUT    2
+#define JZIP_STREAM_END    3
+#define JZIP_BLOCK_END     4
 /**
  * Status codes returned.
  *
@@ -23,7 +27,7 @@ extern "C"
  */
 typedef enum {
 	JZIP_OK         = 0,  /**< Success */
-    JZIP_INVALID    = -1, /**< paramter invalid */
+    JZIP_INVALID    = -1, /**< Parameter Invalid */
 	JZIP_DATA_ERROR = -3, /**< Input error */
 	JZIP_BUF_ERROR  = -5  /**< Not enough room for output */
 } jzip_error_code;
@@ -38,6 +42,9 @@ void jzip_init(void);
 
 int jzip_uncompress(void *dest, unsigned int *destLen,
                            const void *source, unsigned int sourceLen);
+
+int jzip_uncompress_streaming(void* dest, unsigned int* destLen,
+                            const void* source, unsigned int sourceLen);
 
 
 unsigned int jzip_crc32(const void *data, unsigned int length);

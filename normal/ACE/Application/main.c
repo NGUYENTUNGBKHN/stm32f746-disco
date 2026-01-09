@@ -15,7 +15,7 @@
 #include "main.h"
 #include "tx_api.h"
 #include "jzip.h"
-#include "stm32f429i_discovery_sdram.h"
+#include "sdram.h"
 /*******************************************************************************
 **                       INTERNAL MACRO DEFINITIONS
 *******************************************************************************/
@@ -97,10 +97,10 @@ void toggle_led(void)
 
 int main()
 {
+    uint32_t *a;
     int res = 0;
-    uint8_t test_in[10] = {0x63, 0x64, 0x62, 0x66, 0x61, 0x65, 0x63, 0x63, 0x07, 0x00};
-    uint8_t test_out[8];
-    unsigned int outlen = 8;
+    uint32_t test_in[10] = {0x63, 0x64, 0x62, 0x66, 0x61, 0x65, 0x63, 0x63, 0x07, 0x00};
+
     /* MPU Configuration */
     MPU_Config();
     /* CPU cache Enable */
@@ -121,21 +121,11 @@ int main()
     /* Enter the ThreadX kernel.  */
     // tx_kernel_enter();
     // SCB_DisableDCache();
-
-    BSP_SDRAM_WriteData(SDRAM_TEST, test_in, 10);
-
-    res = jzip_uncompress(&test_out, &outlen, &test_in, 10);
-	if (res != JZIP_OK)
-    {
-        TRACE_INFO("uncompressed error %x \n", res);
-    }
-
-    TRACE_INFO("test out : ");
-    for (int i = 0; i < 8; i++)
-    {
-        TRACE_INFO("%x ", test_out[i]);
-    }
-    TRACE_INFO("\n");
+    a = (uint32_t*)(SDRAM_TEST + 4);
+    sdram_test = 0x55;
+    // *a = 0x55;
+    // BSP_SDRAM_WriteData(SDRAM_TEST, test_in, 10);
+    TRACE_INFO("a(0x%x) = %x\n", (uint32_t)a, (int)*a);
 
     while (1) 
     {

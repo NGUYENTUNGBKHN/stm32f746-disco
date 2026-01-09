@@ -35,7 +35,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f429i_discovery_sdram.h"
+#include "sdram.h"
 
 extern void HAL_Delay(uint32_t Delay);
 /** @addtogroup BSP
