@@ -83,7 +83,7 @@ void led_init()
 }
 
 __attribute__((section(".ext_ram")))
-uint32_t sdram_test = 0x01;
+uint32_t sdram_test;
 
 // void __attribute__((section(".qspi"), noinline)) toggle_led(void)
 // {
