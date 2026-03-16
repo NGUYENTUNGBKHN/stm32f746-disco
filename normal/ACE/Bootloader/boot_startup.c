@@ -23,7 +23,7 @@ extern uint32_t _edata;
 
 extern uint32_t _sbss;
 extern uint32_t _ebss;
-
+void SystemInit_ExtMemCtl(void);
 
 void Reset_Handler()
 {
@@ -33,7 +33,7 @@ void Reset_Handler()
     volatile uint32_t *bss_start = &_sbss;
     volatile uint32_t *bss_end = &_ebss;
     SystemInit();
-    // SystemInit_ExtMemCtl();
+    SystemInit_ExtMemCtl();
     while (start < end)
     {
         /* code */
@@ -52,6 +52,21 @@ void Reset_Handler()
     // __libc_init_array();
     
     boot_main();
+}
+
+void SystemInit_ExtMemCtl(void)
+{
+    register uint32_t tmpreg = 0, timout = 0xFFFF;
+    register __IO uint32_t index;
+    /* Step 1: Enable clock */
+    /* GPIOC D E F G H */
+    RCC->AHB1ENR |= 0x000000FC;
+    tmpreg = RCC->AHB1ENR;
+    (void)tmpreg;
+
+    /* Step 2: Configure GPIO for FMC SDRAM */
+    
+
 }
 
 

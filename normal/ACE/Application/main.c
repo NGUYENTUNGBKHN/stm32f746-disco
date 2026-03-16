@@ -110,7 +110,7 @@ int main()
     /* Clock configuration */
     SystemClock_Config();
     /* sdram */
-    BSP_SDRAM_Init();
+    // BSP_SDRAM_Init();
 
     led_init();
     TRACE_INFO("Entered Application \n");
@@ -121,7 +121,7 @@ int main()
     /* Enter the ThreadX kernel.  */
     // tx_kernel_enter();
     // SCB_DisableDCache();
-    a = (uint32_t*)(SDRAM_TEST + 4);
+    a = (uint32_t*)(SDRAM_TEST);
     sdram_test = 0x55;
     // *a = 0x55;
     // BSP_SDRAM_WriteData(SDRAM_TEST, test_in, 10);

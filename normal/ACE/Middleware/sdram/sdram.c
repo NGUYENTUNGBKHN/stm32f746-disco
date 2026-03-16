@@ -162,7 +162,7 @@ void BSP_SDRAM_Initialization_sequence(uint32_t RefreshCount)
 
 	/* Step 1:  Configure a clock configuration enable command */
 	Command.CommandMode = FMC_SDRAM_CMD_CLK_ENABLE;
-	Command.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK2;
+	Command.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK1;
 	Command.AutoRefreshNumber = 1;
 	Command.ModeRegisterDefinition = 0;
 
@@ -175,7 +175,7 @@ void BSP_SDRAM_Initialization_sequence(uint32_t RefreshCount)
 
 	/* Step 3: Configure a PALL (precharge all) command */
 	Command.CommandMode = FMC_SDRAM_CMD_PALL;
-	Command.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK2;
+	Command.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK1;
 	Command.AutoRefreshNumber = 1;
 	Command.ModeRegisterDefinition = 0;
 
@@ -184,7 +184,7 @@ void BSP_SDRAM_Initialization_sequence(uint32_t RefreshCount)
 
 	/* Step 4: Configure an Auto Refresh command */
 	Command.CommandMode = FMC_SDRAM_CMD_AUTOREFRESH_MODE;
-	Command.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK2;
+	Command.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK1;
 	Command.AutoRefreshNumber = 4;
 	Command.ModeRegisterDefinition = 0;
 
@@ -199,7 +199,7 @@ void BSP_SDRAM_Initialization_sequence(uint32_t RefreshCount)
 			 SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;
 
 	Command.CommandMode = FMC_SDRAM_CMD_LOAD_MODE;
-	Command.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK2;
+	Command.CommandTarget = FMC_SDRAM_CMD_TARGET_BANK1;
 	Command.AutoRefreshNumber = 1;
 	Command.ModeRegisterDefinition = tmpmrd;
 

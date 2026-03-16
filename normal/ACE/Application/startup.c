@@ -34,7 +34,7 @@ void Reset_Handler()
     volatile uint32_t *bss_start = &_sbss;
     volatile uint32_t *bss_end = &_ebss;
     SystemInit();
-    // SystemInit_ExtMemCtl();
+    SystemInit_ExtMemCtl();
     while (start < end)
     {
         /* code */
@@ -71,6 +71,8 @@ void SystemInit_ExtMemCtl(void)
 	/* Enable GPIOC, GPIOD, GPIOE, GPIOF, GPIOG and GPIOH interface
 	clock */
 	RCC->AHB1ENR |= 0x000000FC;
+    tmpreg = RCC->AHB1ENR;
+    (void)tmpreg;
 
 	/* Connect PCx pins to FMC Alternate function */
 	GPIOC->AFR[0] = 0x0000C000;
@@ -146,6 +148,8 @@ void SystemInit_ExtMemCtl(void)
 
 	/* Enable the FMC interface clock */
 	RCC->AHB3ENR |= 0x00000001;
+    tmpreg = RCC->AHB1ENR;
+    (void)tmpreg;
 
 	/* Configure and enable SDRAM bank1 */
     /* NC[1:0]   : 8bits  - Number of column address bits. 
