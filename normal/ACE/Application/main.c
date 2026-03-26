@@ -27,7 +27,7 @@
 #define DEMO_BLOCK_POOL_SIZE    100
 #define DEMO_QUEUE_SIZE         100
 
-#define SDRAM_TEST 0xC0000000
+#define SDRAM_TEST 0xC07FFFFC
 /*******************************************************************************
 **                      COMMON VARIABLE DEFINITIONS
 *******************************************************************************/
@@ -122,10 +122,9 @@ int main()
     // tx_kernel_enter();
     // SCB_DisableDCache();
     a = (uint32_t*)(SDRAM_TEST);
-    sdram_test = 0x55;
-    // *a = 0x55;
+    // sdram_test = 0x55555555;
+    *a = 0x55;
     // BSP_SDRAM_WriteData(SDRAM_TEST, test_in, 10);
-    TRACE_INFO("a(0x%x) = %x\n", (uint32_t)a, (int)*a);
 
     while (1) 
     {

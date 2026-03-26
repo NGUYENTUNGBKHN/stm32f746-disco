@@ -13,6 +13,8 @@
 
 uint16_t test[30];
 
+extern void SystemInit_ExtMemCtl(void);
+
 static void MPU_Config();
 static void SystemClock_Config();
 static void Error_Handler(void);
@@ -31,7 +33,7 @@ int boot_main()
     /* Clock configuration */
     SystemClock_Config();
     TRACE_INFO("Bootloader \n");
-
+    SystemInit_ExtMemCtl();
     if (1)
     {
         TRACE_INFO("jumping to application \n");

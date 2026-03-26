@@ -34,7 +34,7 @@ void Reset_Handler()
     volatile uint32_t *bss_start = &_sbss;
     volatile uint32_t *bss_end = &_ebss;
     SystemInit();
-    SystemInit_ExtMemCtl();
+    // SystemInit_ExtMemCtl();
     while (start < end)
     {
         /* code */
