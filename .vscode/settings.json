@@ -1,0 +1,34 @@
+{
+        "doxdocgen.c.getterText": "Create a {name} object",
+    "doxdocgen.file.customTag": [
+        "@details    ",
+        "@ref        ",
+        "@copyright  Copyright (c) {year} RoboTun"
+    ],
+    "doxdocgen.file.fileOrder": [
+        "file",
+        "brief",
+        "date",
+        "author",
+        "custom"
+    ],
+    // The template for the file parameter in Doxygen.
+    "doxdocgen.file.fileTemplate": "@file       {name}",
+    // Set the name of the author.  Replaces {author}.
+    "doxdocgen.generic.authorName": "    [Gentantun]",
+    "doxdocgen.c.commentPrefix": " * ",
+    "doxdocgen.c.firstLine": "/**",
+    "doxdocgen.c.lastLine": "*/",
+    "doxdocgen.generic.briefTemplate": "@brief      {text}",
+    "doxdocgen.generic.dateFormat": "      YYYY/MM/DD",
+    "doxdocgen.generic.authorEmail": "nguyenthanhtung8196@gmail.com",
+
+
+    "cortex-debug.variableUseNaturalFormat": false,
+    "makefile.makefilePath": "E:\\Project\\Embedded\\STM32\\stm32f746-disco\\normal\\ACE\\Bootloader\\Makefile",
+    "files.associations": {
+        "*.h": "c",
+        "cstdint": "c"
+    },
+    "cmake.sourceDirectory": "E:/Project/Embedded/STM32/stm32f746-disco/normal/ACE"
+}

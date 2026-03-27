@@ -4,3 +4,5 @@
 **/Debug
 **/*.launch
 
+**/_build
+**/_cmake_build
