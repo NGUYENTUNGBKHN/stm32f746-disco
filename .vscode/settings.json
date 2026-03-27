@@ -30,5 +30,5 @@
         "*.h": "c",
         "cstdint": "c"
     },
-    "cmake.sourceDirectory": "E:/Project/Embedded/STM32/stm32f746-disco/normal/ACE"
+    "cmake.ignoreCMakeListsMissing": true,
 }

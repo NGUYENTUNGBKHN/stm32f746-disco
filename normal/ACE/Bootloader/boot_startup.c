@@ -54,6 +54,21 @@ void Reset_Handler()
     boot_main();
 }
 
+
+void SystemInit_ExtFlashCtl(void)
+{
+    register uint32_t tmpreg = 0, timeout = 0xFFFF;
+
+    /* Step 1: Enable Clock */
+    /* GPIOB - D - E */
+    RCC->AHB1ENR |= 0x0000001A;
+    tmpreg = RCC->AHB1ENR;
+    (void)tmpreg;
+
+    /* Step 2: Configure GPIO for External Flash */
+    
+}
+
 void SystemInit_ExtMemCtl(void)
 {
     register uint32_t tmpreg = 0, timeout = 0xFFFF;

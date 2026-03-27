@@ -3,7 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
+                "${workspaceFolder}/normal/ACE/**",
                 "${workspaceFolder}/normal/make_dev/sdk/Device/Include/"
             ],
             "defines": [
