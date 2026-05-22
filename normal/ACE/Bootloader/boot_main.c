@@ -10,6 +10,7 @@
     Japan CashMachine Co, Limited. All rights reserved.
 ******************************************************************************/
 #include "boot_main.h"
+#include "debug_uart.h"
 
 uint16_t test[30];
 
@@ -32,9 +33,11 @@ int boot_main()
     HAL_Init();
     /* Clock configuration */
     SystemClock_Config();
+    /* Debug UART initialize (USART1 → ST-Link VCP, 115200) */
+    debug_uart_init();
     TRACE_INFO("Bootloader \n");
-    SystemInit_ExtMemCtl();
-    if (1)
+    // SystemInit_ExtMemCtl();
+    if (0)
     {
         TRACE_INFO("jumping to application \n");
         jump_to_application();

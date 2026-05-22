@@ -29,7 +29,9 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/times.h>
+#include "debug_uart.h"
 
+#if ITM_DEBUG
 /* ITM Function */
 
 // Debug Exception and Monitor Control Register base address
@@ -57,7 +59,7 @@ void ITM_SendChar(uint8_t ch)
 }
 
 /***************/
-
+#endif // ENABLE ITM_DEBUG
 /* Variables */
 extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
@@ -111,8 +113,11 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
 
     for (DataIdx = 0; DataIdx < len; DataIdx++)
     {
+        #if ITM_DEBUG
         ITM_SendChar(*ptr++);
-        //    __io_putchar(*ptr++);
+        #else
+        debug_uart_putchar(*ptr++);
+        #endif // ITM_DEBUG
     }
     return len;
 }

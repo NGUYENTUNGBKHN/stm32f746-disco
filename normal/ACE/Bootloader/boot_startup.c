@@ -66,7 +66,48 @@ void SystemInit_ExtFlashCtl(void)
     (void)tmpreg;
 
     /* Step 2: Configure GPIO for External Flash */
-    
+    /*--------------------------------------------------------------------------*/
+    /*--------------------- Configuration of the I/O pins ----------------------*/
+    /*--------------------------------------------------------------------------*/
+    /* Configure alternate function selection for IO pins */
+    GPIOB->AFR[0] = 0x0A000900;
+    GPIOE->AFR[0] = 0x00000900;
+    GPIOD->AFR[1] = 0x00999000;
+
+    /* Configure alternate function mode for IO pins */
+    GPIOB->MODER = 0x000022A0;
+    GPIOE->MODER = 0x00000020;
+    GPIOD->MODER = 0x0A800000;
+
+    /* Configure output speed for IO pins */
+    GPIOB->OSPEEDR = 0x000030F0;
+    GPIOE->OSPEEDR = 0x00000030;
+    GPIOD->OSPEEDR = 0x0FC00000;
+
+    /* Configure pull-up or pull-down for IO pins */
+    GPIOB->PUPDR = 0x00001100;
+
+    /* Step 3: Initialize QSPI*/
+    /*--------------------------------------------------------------------------*/
+    /*----------------------- Initialization of the QSPI -----------------------*/
+    /*--------------------------------------------------------------------------*/
+    timeout = 0xFFFF;
+    do
+    {
+        tmpreg = (QUADSPI->SR & QUADSPI_SR_BUSY);
+    } while ((tmpreg != 0) && (timeout-- > 0));
+
+    if (timeout != 0)
+    {
+        /* Configure device configuration register of QSPI */
+        /* - FSIZE = 23 */
+        /* - CKMODE : 0 */
+        QUADSPI->DCR = QUADSPI_DCR_CSHT_0 | 23 << 16;
+        /* Configure control register of QSPI: precsaler, sample shift and enable QSPI */
+        QUADSPI->CR = (1 << 24) | QUADSPI_CR_SSHIFT | QUADSPI_CR_EN;
+    }
+
+    /* Step 4: */
 }
 
 void SystemInit_ExtMemCtl(void)
